@@ -1,0 +1,111 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.RentabiliteView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <TextBlock Text="Période du" Style="{StaticResource Etiquette}"/>
+            <DatePicker SelectedDate="{Binding Du}"/>
+            <TextBlock Text="au" Style="{StaticResource Etiquette}"/>
+            <DatePicker SelectedDate="{Binding Au}"/>
+            <Button Content="Calculer" Style="{StaticResource Principal}" Command="{Binding CalculerCommand}"/>
+        </WrapPanel>
+        <TabControl>
+            <TabItem Header="Par activité">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8">
+                        <Border Background="{StaticResource DangerClair}" Padding="8" Margin="0,0,0,8" Visibility="{Binding Resultat.Incomplet, Converter={StaticResource Visible}}">
+                            <TextBlock Text="Résultat provisoire : des données de la période ne sont pas encore validées (voir les avertissements)." Foreground="{StaticResource Danger}"/>
+                        </Border>
+                        <DataGrid ItemsSource="{Binding Lignes}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Activité" Binding="{Binding Libelle}" Width="*"/>
+                                <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite, StringFormat=N0}" Width="85"/>
+                                <DataGridTextColumn Header="Unité" Binding="{Binding Unite}" Width="50"/>
+                                <DataGridTextColumn Header="CA HT" Binding="{Binding ChiffreAffairesHt, StringFormat=N2}" Width="105"/>
+                                <DataGridTextColumn Header="Coût des ventes" Binding="{Binding CoutDesVentes, StringFormat=N2}" Width="105"/>
+                                <DataGridTextColumn Header="Marge brute" Binding="{Binding MargeBrute, StringFormat=N2}" Width="100"/>
+                                <DataGridTextColumn Header="Marge / unité" Binding="{Binding MargeUnitaire.Valeur, StringFormat=N4}" Width="90"/>
+                                <DataGridTextColumn Header="Taux de marque %" Binding="{Binding TauxMarque.Valeur, StringFormat=N2}" Width="105"/>
+                                <DataGridTextColumn Header="Frais directs" Binding="{Binding FraisDirects, StringFormat=N2}" Width="90"/>
+                                <DataGridTextColumn Header="Contribution" Binding="{Binding Contribution, StringFormat=N2}" Width="100"/>
+                                <DataGridTextColumn Header="Charges directes" Binding="{Binding ChargesDirectes, StringFormat=N2}" Width="105"/>
+                                <DataGridTextColumn Header="Charges réparties" Binding="{Binding ChargesReparties, StringFormat=N2}" Width="110"/>
+                                <DataGridTextColumn Header="Résultat estimé" Binding="{Binding ResultatEstime, StringFormat=N2}" Width="110"/>
+                                <DataGridTextColumn Header="Part du CA %" Binding="{Binding PartChiffreAffairesPct.Valeur, StringFormat=N1}" Width="85"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <TextBlock Text="{Binding Resultat.Methode}" Foreground="#8C959F" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                        <ItemsControl ItemsSource="{Binding Avertissements}" Margin="0,6,0,0">
+                            <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding StringFormat=• {0}}" Foreground="{StaticResource Attention}" TextWrapping="Wrap"/></DataTemplate></ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="Répartition des charges indirectes" Style="{StaticResource SousTitre}"/>
+                        <DataGrid ItemsSource="{Binding Repartitions}" MaxHeight="260">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="*"/>
+                                <DataGridTextColumn Header="Centre" Binding="{Binding Centre}" Width="150"/>
+                                <DataGridTextColumn Header="Clé" Binding="{Binding Cle}" Width="150"/>
+                                <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="110"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Seuil de rentabilité">
+                <StackPanel Margin="8" DataContext="{Binding Seuil}">
+                    <WrapPanel>
+                        <Border Style="{StaticResource Carte}" Width="220"><StackPanel><TextBlock Text="CA HT de la période" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding ChiffreAffairesHt, StringFormat=N2}" FontSize="18"/></StackPanel></Border>
+                        <Border Style="{StaticResource Carte}" Width="220"><StackPanel><TextBlock Text="Coûts variables" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding CoutsVariables, StringFormat=N2}" FontSize="18"/></StackPanel></Border>
+                        <Border Style="{StaticResource Carte}" Width="220"><StackPanel><TextBlock Text="Charges fixes" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding ChargesFixes, StringFormat=N2}" FontSize="18"/></StackPanel></Border>
+                        <Border Style="{StaticResource Carte}" Width="220"><StackPanel><TextBlock Text="Taux de marge sur coûts variables" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding TauxMcvPct.Valeur, StringFormat={}{0:N2} %}" FontSize="18"/><TextBlock Text="{Binding TauxMcvPct.Raison}" Foreground="#8C959F" TextWrapping="Wrap"/></StackPanel></Border>
+                        <Border Style="{StaticResource Carte}" Width="220"><StackPanel><TextBlock Text="Seuil (CA HT)" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding SeuilChiffreAffaires.Valeur, StringFormat=N2}" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="{Binding SeuilChiffreAffaires.Raison}" Foreground="#8C959F" TextWrapping="Wrap"/></StackPanel></Border>
+                        <Border Style="{StaticResource Carte}" Width="220"><StackPanel><TextBlock Text="Seuil en litres de carburant" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding SeuilVolumeCarburant.Valeur, StringFormat=N0}" FontSize="18"/><TextBlock Text="{Binding SeuilVolumeCarburant.Raison}" Foreground="#8C959F" TextWrapping="Wrap"/></StackPanel></Border>
+                        <Border Style="{StaticResource Carte}" Width="220"><StackPanel><TextBlock Text="Progression vers le seuil" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding ProgressionPct.Valeur, StringFormat={}{0:N1} %}" FontSize="18"/></StackPanel></Border>
+                    </WrapPanel>
+                    <TextBlock Text="{Binding Methode}" Foreground="#8C959F" TextWrapping="Wrap"/>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Simulation" Visibility="{Binding PeutSimuler, Converter={StaticResource Visible}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8">
+                        <TextBlock TextWrapping="Wrap" Foreground="#57606A" Margin="0,0,0,6"
+                                   Text="Variations par litre ou par unité (DH HT, + ou −) et en % de volume. La simulation n'écrit rien dans la base."/>
+                        <DataGrid ItemsSource="{Binding Hypotheses}" IsReadOnly="False" MaxHeight="260">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Activité" Binding="{Binding Libelle}" IsReadOnly="True" Width="*"/>
+                                <DataGridTextColumn Header="Δ prix de vente HT" Binding="{Binding PrixVente, UpdateSourceTrigger=PropertyChanged}" Width="140"/>
+                                <DataGridTextColumn Header="Δ prix d'achat HT" Binding="{Binding PrixAchat, UpdateSourceTrigger=PropertyChanged}" Width="140"/>
+                                <DataGridTextColumn Header="Δ volume %" Binding="{Binding VolumePct, UpdateSourceTrigger=PropertyChanged}" Width="110"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <WrapPanel Margin="0,8">
+                            <TextBlock Text="Δ charges fixes (DH)" Style="{StaticResource Etiquette}"/>
+                            <TextBox Text="{Binding VariationChargesFixes}" Width="100"/>
+                            <TextBlock Text="Δ charges variables (%)" Style="{StaticResource Etiquette}"/>
+                            <TextBox Text="{Binding VariationChargesVariablesPct}" Width="70"/>
+                            <Button Content="Simuler" Style="{StaticResource Principal}" Command="{Binding SimulerCommand}"/>
+                        </WrapPanel>
+                        <StackPanel Visibility="{Binding Simulation, Converter={StaticResource SiTexte}}">
+                            <DataGrid ItemsSource="{Binding LignesSimulation}">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Activité" Binding="{Binding Libelle}" Width="*"/>
+                                    <DataGridTextColumn Header="Quantité avant" Binding="{Binding QuantiteAvant, StringFormat=N0}" Width="105"/>
+                                    <DataGridTextColumn Header="après" Binding="{Binding QuantiteApres, StringFormat=N0}" Width="90"/>
+                                    <DataGridTextColumn Header="Marge avant" Binding="{Binding MargeAvant, StringFormat=N2}" Width="105"/>
+                                    <DataGridTextColumn Header="après" Binding="{Binding MargeApres, StringFormat=N2}" Width="105"/>
+                                    <DataGridTextColumn Header="Contribution avant" Binding="{Binding ContributionAvant, StringFormat=N2}" Width="125"/>
+                                    <DataGridTextColumn Header="après" Binding="{Binding ContributionApres, StringFormat=N2}" Width="105"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBlock FontSize="15" Margin="0,8,0,0">
+                                Résultat avant <Run Text="{Binding Simulation.ResultatAvant, Mode=OneWay, StringFormat=N2}"/> · après
+                                <Run Text="{Binding Simulation.ResultatApres, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> · écart
+                                <Run Text="{Binding Simulation.Ecart, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                            <TextBlock Text="{Binding Simulation.Avertissement}" Foreground="#8C959F" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

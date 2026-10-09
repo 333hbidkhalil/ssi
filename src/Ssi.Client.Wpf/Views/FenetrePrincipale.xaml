@@ -1,0 +1,82 @@
+<Window x:Class="Ssi.Client.Wpf.Views.FenetrePrincipale"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SSI — Station Service Intelligence" Height="820" Width="1360" MinHeight="600" MinWidth="1000"
+        WindowStartupLocation="CenterScreen" Background="#F6F8FA" FontSize="13">
+    <Grid>
+        <!-- Connexion -->
+        <Border Visibility="{Binding Connecte, Converter={StaticResource Invisible}}" Background="#F6F8FA">
+            <Border Style="{StaticResource Carte}" Width="380" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="SSI" FontSize="28" FontWeight="Bold" Foreground="{StaticResource Primaire}"/>
+                    <TextBlock Text="Station Service Intelligence" Foreground="#57606A" Margin="0,0,0,18"/>
+                    <StackPanel Visibility="{Binding ChangementMotDePasseRequis, Converter={StaticResource Invisible}}">
+                        <TextBlock Text="Identifiant"/>
+                        <TextBox Text="{Binding Login, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,10" x:Name="ChampLogin"/>
+                        <TextBlock Text="Mot de passe"/>
+                        <PasswordBox x:Name="MotDePasse" Margin="0,2,0,14" Padding="4,3" KeyDown="MotDePasse_KeyDown"/>
+                        <Button Content="Se connecter" Style="{StaticResource Principal}" Click="Connecter_Click" IsDefault="True" Margin="0"/>
+                    </StackPanel>
+                    <StackPanel Visibility="{Binding ChangementMotDePasseRequis, Converter={StaticResource Visible}}">
+                        <TextBlock TextWrapping="Wrap" Margin="0,0,0,10" Text="Première connexion ou mot de passe réinitialisé : choisissez un nouveau mot de passe (10 caractères minimum)."/>
+                        <TextBlock Text="Mot de passe actuel"/>
+                        <PasswordBox x:Name="Ancien" Margin="0,2,0,8" Padding="4,3"/>
+                        <TextBlock Text="Nouveau mot de passe"/>
+                        <PasswordBox x:Name="Nouveau" Margin="0,2,0,8" Padding="4,3"/>
+                        <TextBlock Text="Confirmation"/>
+                        <PasswordBox x:Name="Confirmation" Margin="0,2,0,14" Padding="4,3"/>
+                        <Button Content="Changer le mot de passe" Style="{StaticResource Principal}" Click="Changer_Click" Margin="0"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding Erreur}" Foreground="{StaticResource Danger}" TextWrapping="Wrap" Margin="0,12,0,0"
+                               Visibility="{Binding Erreur, Converter={StaticResource SiTexte}}"/>
+                    <TextBlock Text="{Binding Serveur, StringFormat=Serveur : {0}}" Foreground="#8C959F" FontSize="11" Margin="0,16,0,0"/>
+                </StackPanel>
+            </Border>
+        </Border>
+
+        <!-- Application -->
+        <DockPanel Visibility="{Binding Connecte, Converter={StaticResource Visible}}">
+            <Border DockPanel.Dock="Left" Width="230" Background="#0F2A3D">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="16,16,16,12">
+                        <TextBlock Text="SSI" FontSize="22" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="{Binding Utilisateur}" Foreground="#B6C7D6" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Margin="12">
+                        <Button Content="Se déconnecter" Command="{Binding DeconnecterCommand}" Margin="0"/>
+                    </StackPanel>
+                    <ListBox ItemsSource="{Binding EntreesVisibles}" SelectedItem="{Binding EntreeCourante}" Background="Transparent" BorderThickness="0"
+                             Foreground="White" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="6,6">
+                                    <TextBlock Text="{Binding Icone}" FontFamily="Segoe MDL2 Assets" Width="26" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Libelle}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+            <Border DockPanel.Dock="Top" Background="White" BorderBrush="{StaticResource Bordure}" BorderThickness="0,0,0,1" Padding="16,10">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Actualiser (F5)" Command="{Binding ActualiserCommand}" Margin="0"/>
+                    <TextBlock Text="{Binding PageCourante.Titre}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </DockPanel>
+            </Border>
+            <Border DockPanel.Dock="Top" Background="{StaticResource DangerClair}" Padding="16,8"
+                    Visibility="{Binding PageCourante.Erreur, Converter={StaticResource SiTexte}}">
+                <TextBlock Text="{Binding PageCourante.Erreur}" Foreground="{StaticResource Danger}" TextWrapping="Wrap"/>
+            </Border>
+            <Border DockPanel.Dock="Top" Background="{StaticResource SuccesClair}" Padding="16,8"
+                    Visibility="{Binding PageCourante.Information, Converter={StaticResource SiTexte}}">
+                <TextBlock Text="{Binding PageCourante.Information}" Foreground="{StaticResource Succes}" TextWrapping="Wrap"/>
+            </Border>
+            <ProgressBar DockPanel.Dock="Top" Height="3" IsIndeterminate="True" Visibility="{Binding PageCourante.Occupe, Converter={StaticResource Visible}}"/>
+            <ContentControl Content="{Binding PageCourante}" Margin="16"/>
+        </DockPanel>
+    </Grid>
+    <Window.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding ActualiserCommand}"/>
+    </Window.InputBindings>
+</Window>

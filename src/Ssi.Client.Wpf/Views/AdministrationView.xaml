@@ -1,0 +1,142 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.AdministrationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TabControl>
+        <TabItem Header="Utilisateurs" Visibility="{Binding GereUtilisateurs, Converter={StaticResource Visible}}">
+            <Grid Margin="8">
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="380"/></Grid.ColumnDefinitions>
+                <DataGrid ItemsSource="{Binding Utilisateurs}" SelectedItem="{Binding Utilisateur}" Margin="0,0,12,0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Identifiant" Binding="{Binding Login}" Width="110"/>
+                        <DataGridTextColumn Header="Nom" Binding="{Binding NomComplet}" Width="*"/>
+                        <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}" Width="50"/>
+                        <DataGridCheckBoxColumn Header="Verrouillé" Binding="{Binding Verrouille}" Width="70"/>
+                        <DataGridTextColumn Header="Dernière connexion" Binding="{Binding DerniereConnexion, StringFormat=dd/MM/yy HH:mm}" Width="125"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Border Grid.Column="1" Style="{StaticResource Carte}">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top">
+                            <Button Content="Nouvel utilisateur" Command="{Binding NouvelUtilisateurCommand}" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                            <TextBlock Text="Identifiant"/>
+                            <TextBox Text="{Binding Login}" Margin="0,2,0,6"/>
+                            <TextBlock Text="Nom complet"/>
+                            <TextBox Text="{Binding NomComplet}" Margin="0,2,0,6"/>
+                            <CheckBox Content="Compte actif" IsChecked="{Binding Actif}" Margin="0,0,0,6"/>
+                            <TextBlock Text="Rôles" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button Content="Enregistrer" Style="{StaticResource Principal}" Command="{Binding EnregistrerUtilisateurCommand}"/>
+                            <Button Content="Réinitialiser le mot de passe…" Command="{Binding ReinitialiserMotDePasseCommand}"/>
+                        </StackPanel>
+                        <ListBox ItemsSource="{Binding Roles}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate><CheckBox IsChecked="{Binding Coche}" Content="{Binding Role.Libelle}"/></DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="Paramètres et taxes">
+            <Grid Margin="8">
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <DockPanel Margin="0,0,12,0">
+                    <WrapPanel DockPanel.Dock="Bottom" Margin="0,8,0,0" Visibility="{Binding GereParametres, Converter={StaticResource Visible}}">
+                        <TextBlock Text="Nouvelle valeur" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding ValeurParametre, UpdateSourceTrigger=PropertyChanged}" Width="160"/>
+                        <Button Content="Modifier…" Command="{Binding ModifierParametreCommand}"/>
+                    </WrapPanel>
+                    <DataGrid ItemsSource="{Binding Parametres}" SelectedItem="{Binding Parametre}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Paramètre" Binding="{Binding Description}" Width="*"/>
+                            <DataGridTextColumn Header="Valeur" Binding="{Binding Valeur}" Width="110"/>
+                            <DataGridTextColumn Header="Clé" Binding="{Binding Cle}" Width="170"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <DockPanel Grid.Column="1">
+                    <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="#57606A" Margin="0,0,0,6"
+                               Text="Les taux de taxe sont datés : un nouveau taux s'applique à partir de sa date de début, les documents antérieurs gardent leur taux. Les valeurs initiales sont à faire valider par le comptable."/>
+                    <WrapPanel DockPanel.Dock="Bottom" Margin="0,8,0,0" Visibility="{Binding GereParametres, Converter={StaticResource Visible}}">
+                        <TextBlock Text="Nouveau taux (%)" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding NouveauTaux, UpdateSourceTrigger=PropertyChanged}" Width="70"/>
+                        <TextBlock Text="à partir du" Style="{StaticResource Etiquette}"/>
+                        <DatePicker SelectedDate="{Binding DebutTaux}"/>
+                        <Button Content="Ajouter…" Command="{Binding AjouterTauxCommand}"/>
+                    </WrapPanel>
+                    <DataGrid DockPanel.Dock="Bottom" ItemsSource="{Binding Taxe.Taux}" MaxHeight="180" Margin="0,8,0,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Taux" Binding="{Binding Taux, StringFormat=P2}" Width="80"/>
+                            <DataGridTextColumn Header="Début" Binding="{Binding DateDebut, StringFormat=dd/MM/yyyy}" Width="90"/>
+                            <DataGridTextColumn Header="Fin" Binding="{Binding DateFin, StringFormat=dd/MM/yyyy}" Width="90"/>
+                            <DataGridTextColumn Header="Commentaire" Binding="{Binding Commentaire}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DataGrid ItemsSource="{Binding Taxes}" SelectedItem="{Binding Taxe}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="90"/>
+                            <DataGridTextColumn Header="Taxe" Binding="{Binding Libelle}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="Journal d'audit" Visibility="{Binding VoitAudit, Converter={StaticResource Visible}}">
+            <DockPanel Margin="8">
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <TextBlock Text="Depuis le" Style="{StaticResource Etiquette}"/>
+                    <DatePicker SelectedDate="{Binding AuditDu}"/>
+                    <TextBlock Text="Action" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding FiltreAction}" Width="150"/>
+                    <TextBlock Text="Objet" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding FiltreObjet}" Width="150"/>
+                    <Button Content="Rechercher" Command="{Binding RechercherAuditCommand}"/>
+                </WrapPanel>
+                <DataGrid ItemsSource="{Binding Audit}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding Horodatage, StringFormat=dd/MM/yy HH:mm:ss}" Width="125"/>
+                        <DataGridTextColumn Header="Utilisateur" Binding="{Binding Login}" Width="90"/>
+                        <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="170"/>
+                        <DataGridTextColumn Header="Objet" Binding="{Binding ObjetType}" Width="120"/>
+                        <DataGridTextColumn Header="Référence" Binding="{Binding ObjetRef}" Width="120"/>
+                        <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="*"/>
+                        <DataGridTextColumn Header="Avant" Binding="{Binding Avant}" Width="150"/>
+                        <DataGridTextColumn Header="Après" Binding="{Binding Apres}" Width="150"/>
+                        <DataGridTextColumn Header="Poste" Binding="{Binding AdresseIp}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+
+        <TabItem Header="Sauvegardes" Visibility="{Binding VoitSauvegardes, Converter={StaticResource Visible}}">
+            <DockPanel Margin="8">
+                <Border DockPanel.Dock="Top" Padding="10" Margin="0,0,0,8">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{StaticResource SuccesClair}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SauvegardeEnAlerte}" Value="True"><Setter Property="Background" Value="{StaticResource DangerClair}"/></DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding EtatSauvegarde}" TextWrapping="Wrap"/>
+                </Border>
+                <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="#57606A" Margin="0,0,0,6"
+                           Text="Une sauvegarde n'est marquée VERIFIEE qu'après restauration de contrôle dans une base séparée et comparaison des totaux. Les sauvegardes sont lancées par la tâche planifiée du serveur (deploy\sauvegarder.ps1)."/>
+                <DataGrid ItemsSource="{Binding Sauvegardes}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding Horodatage, StringFormat=dd/MM/yy HH:mm}" Width="110"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="90"/>
+                        <DataGridTextColumn Header="Fichier" Binding="{Binding Fichier}" Width="*"/>
+                        <DataGridTextColumn Header="Taille (octets)" Binding="{Binding Taille, StringFormat=N0}" Width="110"/>
+                        <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="160"/>
+                        <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="200"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+    </TabControl>
+</UserControl>

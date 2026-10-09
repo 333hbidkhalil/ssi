@@ -1,0 +1,92 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.CaisseView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="360"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Margin="0,0,12,0">
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8" Visibility="{Binding PeutCreer, Converter={StaticResource Visible}}">
+                <ComboBox ItemsSource="{Binding Caisses}" SelectedItem="{Binding Caisse}" DisplayMemberPath="Libelle" MinWidth="160"/>
+                <Button Content="Ouvrir la caisse" Style="{StaticResource Principal}" Command="{Binding OuvrirCommand}"/>
+            </StackPanel>
+            <DataGrid ItemsSource="{Binding Sessions}" SelectedItem="{Binding SessionSelectionnee}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Session" Binding="{Binding Numero}" Width="*"/>
+                    <DataGridTextColumn Header="Ouverture" Binding="{Binding Ouverture, StringFormat=dd/MM HH:mm}" Width="85"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="75"/>
+                    <DataGridTextColumn Header="Écart" Binding="{Binding Ecart, StringFormat=N2}" Width="70"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding Detail, Converter={StaticResource SiTexte}}">
+            <StackPanel>
+                <Border Style="{StaticResource Carte}">
+                    <StackPanel>
+                        <TextBlock FontSize="16" FontWeight="SemiBold">
+                            <Run Text="{Binding Detail.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Compte, Mode=OneWay}"/> — <Run Text="{Binding Detail.Statut, Mode=OneWay}"/>
+                        </TextBlock>
+                        <UniformGrid Columns="6" Margin="0,8,0,0">
+                            <StackPanel><TextBlock Text="Ouverture" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.SoldeOuverture, StringFormat=N2}" FontSize="15"/></StackPanel>
+                            <StackPanel><TextBlock Text="Entrées" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.Encaissements, StringFormat=N2}" FontSize="15"/></StackPanel>
+                            <StackPanel><TextBlock Text="Sorties" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.Decaissements, StringFormat=N2}" FontSize="15"/></StackPanel>
+                            <StackPanel><TextBlock Text="Théorique" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.SoldeTheorique, StringFormat=N2}" FontSize="15" FontWeight="SemiBold"/></StackPanel>
+                            <StackPanel><TextBlock Text="Compté" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.MontantCompte, StringFormat=N2}" FontSize="15"/></StackPanel>
+                            <StackPanel><TextBlock Text="Écart" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.Ecart, StringFormat=N2}" FontSize="15" FontWeight="SemiBold"/></StackPanel>
+                        </UniformGrid>
+                        <TextBlock Text="{Binding Detail.Commentaire}" Foreground="#57606A" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                        <ItemsControl ItemsSource="{Binding Detail.Alertes}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate><TextBlock Text="{Binding StringFormat=• {0}}" Foreground="{StaticResource Attention}" TextWrapping="Wrap"/></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Visibility="{Binding EstOuverte, Converter={StaticResource Visible}}">
+                    <TextBlock Text="Entrée ou sortie d'espèces" Style="{StaticResource SousTitre}"/>
+                    <WrapPanel>
+                        <RadioButton Content="Entrée" IsChecked="{Binding Entree}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <RadioButton Content="Sortie" IsChecked="{Binding Entree, Converter={StaticResource Non}}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <TextBlock Text="Montant" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding MontantOperation, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        <TextBlock Text="Libellé" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding LibelleOperation, UpdateSourceTrigger=PropertyChanged}" Width="240"/>
+                        <TextBlock Text="Réf." Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding ReferenceOperation}" Width="100"/>
+                        <Button Content="Enregistrer" Command="{Binding AjouterOperationCommand}"/>
+                    </WrapPanel>
+                    <TextBlock Text="Les encaissements des postes validés et des ventes d'articles arrivent automatiquement ; les paiements fournisseurs et charges se saisissent dans leurs écrans." Foreground="#8C959F" TextWrapping="Wrap" Margin="0,4,0,0"/>
+
+                    <TextBlock Text="Clôture : comptage des espèces" Style="{StaticResource SousTitre}"/>
+                    <WrapPanel>
+                        <TextBlock Text="Montant compté" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding MontantCompte, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                        <TextBlock Text="Commentaire" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding CommentaireCloture}" Width="300"/>
+                        <Button Content="Clôturer" Style="{StaticResource Principal}" Command="{Binding CloturerCommand}"/>
+                    </WrapPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                    <Button Content="Valider la session" Style="{StaticResource Principal}" Command="{Binding ValiderCommand}"
+                            Visibility="{Binding EstCloturee, Converter={StaticResource Visible}}" IsEnabled="{Binding PeutValider}"/>
+                    <Button Content="Rouvrir…" Command="{Binding RouvrirCommand}" Visibility="{Binding PeutRouvrir, Converter={StaticResource Visible}}"/>
+                </StackPanel>
+
+                <TextBlock Text="Mouvements de la session" Style="{StaticResource SousTitre}"/>
+                <DataGrid ItemsSource="{Binding Detail.Mouvements}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Heure" Binding="{Binding Horodatage, StringFormat=dd/MM HH:mm}" Width="90"/>
+                        <DataGridTextColumn Header="Nature" Binding="{Binding Nature}" Width="170"/>
+                        <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                        <DataGridTextColumn Header="Pièce" Binding="{Binding DocumentRef}" Width="120"/>
+                        <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

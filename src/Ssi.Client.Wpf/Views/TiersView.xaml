@@ -1,0 +1,145 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.TiersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="420"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Margin="0,0,12,0">
+            <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                <RadioButton Content="Clients" IsChecked="{Binding OngletFournisseurs, Converter={StaticResource Non}}" IsEnabled="{Binding VoitClients}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                <RadioButton Content="Fournisseurs" IsChecked="{Binding OngletFournisseurs}" IsEnabled="{Binding VoitFournisseurs}" Margin="0,0,14,0" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding Recherche, UpdateSourceTrigger=PropertyChanged}" Width="130" ToolTip="Nom, code ou ICE"/>
+                <Button Content="Rechercher" Command="{Binding RechercherCommand}" MinWidth="0"/>
+                <Button Content="Nouveau" Command="{Binding NouveauCommand}" MinWidth="0" Visibility="{Binding PeutModifier, Converter={StaticResource Visible}}"/>
+            </WrapPanel>
+            <Grid>
+                <DataGrid ItemsSource="{Binding Clients}" SelectedItem="{Binding ClientSelectionne}" Visibility="{Binding OngletFournisseurs, Converter={StaticResource Invisible}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="70"/>
+                        <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70"/>
+                        <DataGridTextColumn Header="Encours" Binding="{Binding Encours, StringFormat=N2}" Width="95"/>
+                        <DataGridCheckBoxColumn Header="Plafond dépassé" Binding="{Binding DepassementPlafond}" Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <DataGrid ItemsSource="{Binding Fournisseurs}" SelectedItem="{Binding FournisseurSelectionne}" Visibility="{Binding OngletFournisseurs, Converter={StaticResource Visible}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="70"/>
+                        <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
+                        <DataGridTextColumn Header="Dette" Binding="{Binding Dette, StringFormat=N2}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </DockPanel>
+
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Style="{StaticResource Carte}" Visibility="{Binding Fiche, Converter={StaticResource SiTexte}}" IsEnabled="{Binding PeutModifier}">
+                    <Grid DataContext="{Binding Fiche}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.Resources>
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}"><Setter Property="Margin" Value="0,0,12,6"/></Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Etiquette}"/>
+                        </Grid.Resources>
+                        <TextBlock Text="Code"/><TextBox Grid.Column="1" Text="{Binding Code}"/>
+                        <TextBlock Grid.Column="2" Text="Nom / raison sociale"/><TextBox Grid.Column="3" Text="{Binding Nom}"/>
+                        <TextBlock Grid.Row="1" Text="ICE"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Ice}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="2" Text="IF"/><TextBox Grid.Row="1" Grid.Column="3" Text="{Binding IdentifiantFiscal}"/>
+                        <TextBlock Grid.Row="2" Text="RC"/><TextBox Grid.Row="2" Grid.Column="1" Text="{Binding RegistreCommerce}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="2" Text="Téléphone"/><TextBox Grid.Row="2" Grid.Column="3" Text="{Binding Telephone}"/>
+                        <TextBlock Grid.Row="3" Text="Adresse"/><TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Adresse}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="2" Text="Ville"/><TextBox Grid.Row="3" Grid.Column="3" Text="{Binding Ville}"/>
+                        <TextBlock Grid.Row="4" Text="E-mail"/><TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Email}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="2" Text="Contact"/><TextBox Grid.Row="4" Grid.Column="3" Text="{Binding Contact}"/>
+                        <TextBlock Grid.Row="5" Text="Délai (jours)"/><TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Delai}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="2" Text="Plafond crédit (clients)"/><TextBox Grid.Row="5" Grid.Column="3" Text="{Binding Plafond}"/>
+                        <StackPanel Grid.Row="6" Grid.ColumnSpan="4" Orientation="Horizontal">
+                            <TextBlock Text="Type client"/>
+                            <ComboBox ItemsSource="{Binding DataContext.Types, RelativeSource={RelativeSource AncestorType=UserControl}}" SelectedItem="{Binding Type}" MinWidth="110"/>
+                            <CheckBox Content="Actif" IsChecked="{Binding Actif}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <TextBox Text="{Binding Notes}" Width="220" ToolTip="Notes"/>
+                            <Button Content="Enregistrer" Style="{StaticResource Principal}" Command="{Binding DataContext.EnregistrerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Carte}" Visibility="{Binding ClientSelectionne, Converter={StaticResource SiTexte}}">
+                    <StackPanel>
+                        <TextBlock>
+                            Créance facturée <Run Text="{Binding ClientSelectionne.Creance, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> ·
+                            Bons non facturés <Run Text="{Binding ClientSelectionne.BonsNonFactures, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> ·
+                            Encours <Run Text="{Binding ClientSelectionne.Encours, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> / plafond
+                            <Run Text="{Binding ClientSelectionne.PlafondCredit, Mode=OneWay, StringFormat=N2}"/>
+                        </TextBlock>
+                        <DockPanel Margin="0,8,0,4">
+                            <Button DockPanel.Dock="Right" Content="Enregistrer une relance…" Command="{Binding RelancerCommand}" Margin="0"/>
+                            <TextBlock Text="Relances" FontWeight="SemiBold"/>
+                        </DockPanel>
+                        <DataGrid ItemsSource="{Binding Relances}" MaxHeight="140">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="90"/>
+                                <DataGridTextColumn Header="Moyen" Binding="{Binding Moyen}" Width="110"/>
+                                <DataGridTextColumn Header="Commentaire" Binding="{Binding Commentaire}" Width="*"/>
+                                <DataGridTextColumn Header="Par" Binding="{Binding Par}" Width="90"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Carte}" Visibility="{Binding Evaluation, Converter={StaticResource SiTexte}}">
+                    <StackPanel>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Signaler un incident…" Command="{Binding SignalerIncidentCommand}" Margin="0"/>
+                            <TextBlock Text="Évaluation fournisseur" FontWeight="SemiBold"/>
+                        </DockPanel>
+                        <TextBlock Foreground="#57606A" Margin="0,4,0,6">
+                            <Run Text="{Binding Evaluation.NombreLivraisons, Mode=OneWay}"/> livraisons · <Run Text="{Binding Evaluation.VolumeLivre, Mode=OneWay, StringFormat=N0}"/> L ·
+                            écart moyen <Run Text="{Binding Evaluation.EcartQuantiteMoyenPct, Mode=OneWay, StringFormat=N2}"/> % · délai moyen
+                            <Run Text="{Binding Evaluation.DelaiMoyenJours, Mode=OneWay, StringFormat=N1}"/> j · prix moyen HT <Run Text="{Binding Evaluation.PrixMoyenHt, Mode=OneWay, StringFormat=N4}"/> ·
+                            <Run Text="{Binding Evaluation.Incidents, Mode=OneWay}"/> incident(s)
+                        </TextBlock>
+                        <DataGrid ItemsSource="{Binding Evaluation.DerniersIncidents}" MaxHeight="120">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="90"/>
+                                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110"/>
+                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+
+                <WrapPanel Margin="0,4,0,6">
+                    <TextBlock Text="Relevé de compte du" Style="{StaticResource Etiquette}"/>
+                    <DatePicker SelectedDate="{Binding Du}"/>
+                    <TextBlock Text="au" Style="{StaticResource Etiquette}"/>
+                    <DatePicker SelectedDate="{Binding Au}"/>
+                    <Button Content="Afficher" Command="{Binding ActualiserReleveCommand}"/>
+                </WrapPanel>
+                <StackPanel Visibility="{Binding Releve, Converter={StaticResource SiTexte}}">
+                    <TextBlock Foreground="#57606A">
+                        Solde d'ouverture <Run Text="{Binding Releve.SoldeOuverture, Mode=OneWay, StringFormat=N2}"/> · solde de clôture
+                        <Run Text="{Binding Releve.SoldeCloture, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> (<Run Text="{Binding Releve.Sens, Mode=OneWay}"/>)
+                    </TextBlock>
+                    <DataGrid ItemsSource="{Binding Releve.Lignes}" MaxHeight="320" Margin="0,4,0,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="90"/>
+                            <DataGridTextColumn Header="Pièce" Binding="{Binding Piece}" Width="120"/>
+                            <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                            <DataGridTextColumn Header="Débit" Binding="{Binding Debit, StringFormat=N2}" Width="100"/>
+                            <DataGridTextColumn Header="Crédit" Binding="{Binding Credit, StringFormat=N2}" Width="100"/>
+                            <DataGridTextColumn Header="Solde" Binding="{Binding Solde, StringFormat=N2}" Width="110"/>
+                            <DataGridTextColumn Header="Échéance" Binding="{Binding Echeance, StringFormat=dd/MM/yyyy}" Width="90"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

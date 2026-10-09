@@ -258,4 +258,8 @@ public class ServiceSecurite(ISsiDb db, IHachageMotDePasse hachage, IHorloge hor
             .ToListAsync(ct);
         return new Page<EntreeAuditDto>(elements, total, page, taille);
     }
+
+    public async Task<IReadOnlyList<SauvegardeDto>> SauvegardesAsync(CancellationToken ct)
+        => await db.Sauvegardes.AsNoTracking().OrderByDescending(s => s.Horodatage).Take(100)
+            .Select(s => new SauvegardeDto(s.Id, s.Horodatage, s.Fichier, s.Taille, s.Sha256, s.Statut, s.Message)).ToListAsync(ct);
 }

@@ -1,0 +1,227 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.TresorerieView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TabControl>
+        <TabItem Header="Situation">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8">
+                    <WrapPanel>
+                        <Border Style="{StaticResource Carte}" Width="210"><StackPanel><TextBlock Text="Disponible" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Situation.Disponible, StringFormat={}{0:N2} DH}" FontSize="18" FontWeight="SemiBold"/></StackPanel></Border>
+                        <Border Style="{StaticResource Carte}" Width="210"><StackPanel><TextBlock Text="En transit (TPE, chèques)" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Situation.EnAttente, StringFormat={}{0:N2} DH}" FontSize="18"/></StackPanel></Border>
+                        <Border Style="{StaticResource Carte}" Width="210"><StackPanel><TextBlock Text="Créances clients" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Situation.CreancesClients, StringFormat={}{0:N2} DH}" FontSize="18"/><TextBlock Text="{Binding Situation.BonsNonFactures, StringFormat=+ bons non facturés {0:N2}}" Foreground="#57606A"/></StackPanel></Border>
+                        <Border Style="{StaticResource Carte}" Width="210"><StackPanel><TextBlock Text="Dettes fournisseurs" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Situation.DettesFournisseurs, StringFormat={}{0:N2} DH}" FontSize="18"/><TextBlock Text="{Binding Situation.ChargesAPayer, StringFormat=+ charges à payer {0:N2}}" Foreground="#57606A"/></StackPanel></Border>
+                    </WrapPanel>
+                    <TextBlock Text="Comptes" Style="{StaticResource SousTitre}"/>
+                    <DataGrid ItemsSource="{Binding Comptes}" MaxHeight="200">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="110"/>
+                            <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="130"/>
+                            <DataGridTextColumn Header="Banque" Binding="{Binding Banque}" Width="120"/>
+                            <DataGridTextColumn Header="Solde" Binding="{Binding Solde, StringFormat=N2}" Width="120"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Text="Prévisions" Style="{StaticResource SousTitre}"/>
+                    <DataGrid ItemsSource="{Binding Previsions}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Horizon (j)" Binding="{Binding Horizon}" Width="80"/>
+                            <DataGridTextColumn Header="Disponible" Binding="{Binding Disponible, StringFormat=N2}" Width="110"/>
+                            <DataGridTextColumn Header="En transit" Binding="{Binding FondsEnTransit, StringFormat=N2}" Width="100"/>
+                            <DataGridTextColumn Header="Encaissements attendus" Binding="{Binding EncaissementsAttendus, StringFormat=N2}" Width="150"/>
+                            <DataGridTextColumn Header="Décaissements prévus" Binding="{Binding DecaissementsPrevus, StringFormat=N2}" Width="140"/>
+                            <DataGridTextColumn Header="Trésorerie projetée" Binding="{Binding TresorerieProjetee, StringFormat=N2}" Width="130"/>
+                            <DataGridTextColumn Header="Créances échues non incluses" Binding="{Binding CreancesEchuesNonIncluses, StringFormat=N2}" Width="170"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Text="{Binding Previsions[0].Hypotheses}" Foreground="#8C959F" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,0,8,0">
+                            <TextBlock Text="Créances à encaisser" Style="{StaticResource SousTitre}"/>
+                            <DataGrid ItemsSource="{Binding Creances}" MaxHeight="240">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Tiers" Binding="{Binding Tiers}" Width="*"/>
+                                    <DataGridTextColumn Header="Pièce" Binding="{Binding Piece}" Width="110"/>
+                                    <DataGridTextColumn Header="Échéance" Binding="{Binding Echeance, StringFormat=dd/MM/yy}" Width="75"/>
+                                    <DataGridTextColumn Header="Reste dû" Binding="{Binding ResteDu, StringFormat=N2}" Width="95"/>
+                                    <DataGridTextColumn Header="Retard" Binding="{Binding JoursRetard}" Width="55"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Dettes à payer" Style="{StaticResource SousTitre}"/>
+                            <DataGrid ItemsSource="{Binding Dettes}" MaxHeight="240">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Tiers" Binding="{Binding Tiers}" Width="*"/>
+                                    <DataGridTextColumn Header="Pièce" Binding="{Binding Piece}" Width="110"/>
+                                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70"/>
+                                    <DataGridTextColumn Header="Échéance" Binding="{Binding Echeance, StringFormat=dd/MM/yy}" Width="75"/>
+                                    <DataGridTextColumn Header="Reste dû" Binding="{Binding ResteDu, StringFormat=N2}" Width="95"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Mouvements et transferts">
+            <DockPanel Margin="8">
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <ComboBox ItemsSource="{Binding Comptes}" SelectedItem="{Binding Compte}" DisplayMemberPath="Libelle" MinWidth="180"/>
+                    <TextBlock Text="du" Style="{StaticResource Etiquette}"/>
+                    <DatePicker SelectedDate="{Binding Du}"/>
+                    <TextBlock Text="au" Style="{StaticResource Etiquette}"/>
+                    <DatePicker SelectedDate="{Binding Au}"/>
+                    <Button Content="Afficher" Command="{Binding RechercherCommand}"/>
+                </WrapPanel>
+                <StackPanel DockPanel.Dock="Bottom" IsEnabled="{Binding PeutCreer}" Margin="0,8,0,0">
+                    <WrapPanel Margin="0,0,0,6">
+                        <TextBlock Text="Transfert de" Style="{StaticResource Etiquette}"/>
+                        <ComboBox ItemsSource="{Binding Comptes}" SelectedItem="{Binding Source}" DisplayMemberPath="Libelle" MinWidth="150"/>
+                        <TextBlock Text="vers" Style="{StaticResource Etiquette}"/>
+                        <ComboBox ItemsSource="{Binding Comptes}" SelectedItem="{Binding Destination}" DisplayMemberPath="Libelle" MinWidth="150"/>
+                        <TextBlock Text="Montant" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding MontantTransfert, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        <TextBlock Text="Commission" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding Commission}" Width="70"/>
+                        <TextBox Text="{Binding LibelleTransfert}" Width="220"/>
+                        <Button Content="Transférer" Style="{StaticResource Principal}" Command="{Binding TransfererCommand}"/>
+                    </WrapPanel>
+                    <WrapPanel>
+                        <TextBlock Text="Frais bancaires sur le compte affiché" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding MontantFrais, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                        <TextBox Text="{Binding LibelleFrais}" Width="220"/>
+                        <Button Content="Enregistrer" Command="{Binding EnregistrerFraisCommand}"/>
+                    </WrapPanel>
+                </StackPanel>
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="2*"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <DataGrid ItemsSource="{Binding Mouvements}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Date" Binding="{Binding DateOperation, StringFormat=dd/MM/yy}" Width="75"/>
+                            <DataGridTextColumn Header="Nature" Binding="{Binding Nature}" Width="170"/>
+                            <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                            <DataGridTextColumn Header="Pièce" Binding="{Binding DocumentRef}" Width="120"/>
+                            <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
+                            <DataGridTextColumn Header="Solde" Binding="{Binding SoldeApres, StringFormat=N2}" Width="110"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DockPanel Grid.Row="1" Margin="0,8,0,0">
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+                            <Button DockPanel.Dock="Right" Content="Annuler le transfert…" Command="{Binding AnnulerTransfertCommand}" IsEnabled="{Binding PeutCreer}" Margin="0"/>
+                            <TextBlock Text="Transferts internes" FontWeight="SemiBold"/>
+                        </DockPanel>
+                        <DataGrid ItemsSource="{Binding Transferts}" SelectedItem="{Binding TransfertSelectionne}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="110"/>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yy}" Width="75"/>
+                                <DataGridTextColumn Header="De" Binding="{Binding CompteSource}" Width="140"/>
+                                <DataGridTextColumn Header="Vers" Binding="{Binding CompteDestination}" Width="140"/>
+                                <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
+                                <DataGridTextColumn Header="Commission" Binding="{Binding Commission, StringFormat=N2}" Width="90"/>
+                                <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                                <DataGridCheckBoxColumn Header="Annulé" Binding="{Binding Annule}" Width="60"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Grid>
+            </DockPanel>
+        </TabItem>
+
+        <TabItem Header="Charges" Visibility="{Binding VoitCharges, Converter={StaticResource Visible}}">
+            <DockPanel Margin="8">
+                <Border DockPanel.Dock="Top" Style="{StaticResource Carte}" Visibility="{Binding PeutCreerCharge, Converter={StaticResource Visible}}">
+                    <WrapPanel>
+                        <DatePicker SelectedDate="{Binding DateCharge}" Margin="0,0,8,4"/>
+                        <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Categorie}" DisplayMemberPath="Libelle" MinWidth="150" Margin="0,0,8,4"/>
+                        <ComboBox ItemsSource="{Binding Centres}" SelectedItem="{Binding Centre}" DisplayMemberPath="Libelle" MinWidth="150" Margin="0,0,8,4"/>
+                        <ComboBox ItemsSource="{Binding Fournisseurs}" SelectedItem="{Binding FournisseurCharge}" DisplayMemberPath="Nom" MinWidth="150" Margin="0,0,8,4" ToolTip="Fournisseur (facultatif)"/>
+                        <TextBox Text="{Binding Beneficiaire}" Width="120" ToolTip="Bénéficiaire si pas de fournisseur" Margin="0,0,8,4"/>
+                        <TextBlock Text="HT" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding MontantHt, UpdateSourceTrigger=PropertyChanged}" Width="90" Margin="0,0,8,4"/>
+                        <TextBlock Text="TVA" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding MontantTva}" Width="70" Margin="0,0,8,4"/>
+                        <TextBlock Text="Échéance" Style="{StaticResource Etiquette}"/>
+                        <DatePicker SelectedDate="{Binding EcheanceCharge}" Margin="0,0,8,4"/>
+                        <TextBox Text="{Binding Description}" Width="180" ToolTip="Description" Margin="0,0,8,4"/>
+                        <TextBox Text="{Binding Piece}" Width="100" ToolTip="Référence de la pièce" Margin="0,0,8,4"/>
+                        <TextBlock Text="Payée maintenant" Style="{StaticResource Etiquette}"/>
+                        <ComboBox ItemsSource="{Binding ModesPaiement}" SelectedItem="{Binding PayeeImmediatement}" MinWidth="100" Margin="0,0,8,4"/>
+                        <ComboBox ItemsSource="{Binding Comptes}" SelectedItem="{Binding ComptePaiement}" DisplayMemberPath="Libelle" MinWidth="130" Margin="0,0,8,4"/>
+                        <Button Content="Enregistrer la charge" Style="{StaticResource Principal}" Command="{Binding CreerChargeCommand}"/>
+                    </WrapPanel>
+                </Border>
+                <Button DockPanel.Dock="Top" Content="Annuler la charge…" Command="{Binding AnnulerChargeCommand}" IsEnabled="{Binding PeutAnnulerCharge}" HorizontalAlignment="Left" Margin="0,0,0,6"/>
+                <DataGrid ItemsSource="{Binding Charges}" SelectedItem="{Binding ChargeSelectionnee}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="110"/>
+                        <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yy}" Width="75"/>
+                        <DataGridTextColumn Header="Catégorie" Binding="{Binding Categorie}" Width="130"/>
+                        <DataGridTextColumn Header="Centre" Binding="{Binding CentreCout}" Width="120"/>
+                        <DataGridTextColumn Header="Tiers" Binding="{Binding Tiers}" Width="130"/>
+                        <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                        <DataGridTextColumn Header="TTC" Binding="{Binding MontantTtc, StringFormat=N2}" Width="95"/>
+                        <DataGridCheckBoxColumn Header="Fixe" Binding="{Binding Fixe}" Width="45"/>
+                        <DataGridTextColumn Header="Reste dû" Binding="{Binding ResteDu, StringFormat=N2}" Width="90"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+
+        <TabItem Header="Rapprochement bancaire" Visibility="{Binding PeutRapprocher, Converter={StaticResource Visible}}">
+            <Grid Margin="8">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="380"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <DockPanel Margin="0,0,12,0">
+                    <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="#57606A" Margin="0,0,0,6"
+                               Text="Compte bancaire choisi dans l'onglet Mouvements. Collez les lignes du relevé : date;libellé;montant (négatif pour un débit), une par ligne."/>
+                    <WrapPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
+                        <TextBlock Text="Date du relevé" Style="{StaticResource Etiquette}"/>
+                        <DatePicker SelectedDate="{Binding DateReleve}"/>
+                        <TextBlock Text="Solde" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding SoldeReleve, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                        <Button Content="Créer" Style="{StaticResource Principal}" Command="{Binding CreerRapprochementCommand}" Margin="0,6,0,0"/>
+                    </WrapPanel>
+                    <TextBox Text="{Binding LignesReleve, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" FontFamily="Consolas"
+                             VerticalContentAlignment="Top" Margin="0"/>
+                </DockPanel>
+                <DockPanel Grid.Column="1" Visibility="{Binding Rapprochement, Converter={StaticResource SiTexte}}">
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock>
+                            Solde relevé <Run Text="{Binding Rapprochement.SoldeReleve, Mode=OneWay, StringFormat=N2}"/> · solde SSI <Run Text="{Binding Rapprochement.SoldeSsi, Mode=OneWay, StringFormat=N2}"/> ·
+                            lignes non pointées <Run Text="{Binding Rapprochement.LignesNonPointees, Mode=OneWay, StringFormat=N2}"/> · mouvements non pointés
+                            <Run Text="{Binding Rapprochement.MouvementsNonPointes, Mode=OneWay, StringFormat=N2}"/> · écart inexpliqué
+                            <Run Text="{Binding Rapprochement.EcartInexplique, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/>
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Margin="0,6">
+                            <Button Content="Pointer la ligne" Command="{Binding PointerCommand}"/>
+                            <Button Content="Dépointer" Command="{Binding DepointerCommand}"/>
+                            <Button Content="Valider le rapprochement" Style="{StaticResource Principal}" Command="{Binding ValiderRapprochementCommand}"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Grid>
+                        <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                        <DataGrid ItemsSource="{Binding Rapprochement.Lignes}" SelectedItem="{Binding LigneRapprochement}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yy}" Width="75"/>
+                                <DataGridTextColumn Header="Libellé banque" Binding="{Binding Libelle}" Width="*"/>
+                                <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
+                                <DataGridTextColumn Header="Mouvement pointé" Binding="{Binding MouvementId}" Width="120"/>
+                                <DataGridTextColumn Header="Suggestions" Binding="{Binding Suggestions.Count}" Width="85"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding Rapprochement.MouvementsSsiNonPointes}" SelectedItem="{Binding MouvementNonPointe}" Margin="0,8,0,0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="N°" Binding="{Binding Id}" Width="70"/>
+                                <DataGridTextColumn Header="Date" Binding="{Binding DateOperation, StringFormat=dd/MM/yy}" Width="75"/>
+                                <DataGridTextColumn Header="Libellé SSI" Binding="{Binding Libelle}" Width="*"/>
+                                <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </DockPanel>
+            </Grid>
+        </TabItem>
+    </TabControl>
+</UserControl>

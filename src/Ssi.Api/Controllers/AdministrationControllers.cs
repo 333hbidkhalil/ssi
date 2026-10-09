@@ -104,4 +104,8 @@ public class AdministrationController(ServiceSecurite securite) : ControllerBase
     public Task<Page<EntreeAuditDto>> Audit(string? objetType, string? objetId, string? action, DateTimeOffset? du, DateTimeOffset? au,
         int page = 1, int taille = 100, CancellationToken ct = default)
         => securite.AuditAsync(objetType, objetId, action, du, au, page, taille, ct);
+
+    /// <summary>Historique des sauvegardes et de leur vérification (écrit par deploy/sauvegarder.ps1).</summary>
+    [HttpGet("sauvegardes"), Autorise(P.AdminSauvegardes, P.AuditConsulter)]
+    public Task<IReadOnlyList<SauvegardeDto>> Sauvegardes(CancellationToken ct) => securite.SauvegardesAsync(ct);
 }

@@ -1,0 +1,92 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.TableauBordView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <WrapPanel>
+                <Border Style="{StaticResource Carte}" Width="220">
+                    <StackPanel>
+                        <TextBlock Text="CA HT du jour" Style="{StaticResource Etiquette}"/>
+                        <TextBlock Text="{Binding Donnees.Jour.ChiffreAffairesHt, StringFormat={}{0:N2} DH}" FontSize="20" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Donnees.Mois.ChiffreAffairesHt, StringFormat=Mois : {0:N2} DH}" Foreground="#57606A"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Carte}" Width="220">
+                    <StackPanel>
+                        <TextBlock Text="Volumes du jour (L)" Style="{StaticResource Etiquette}"/>
+                        <TextBlock Text="{Binding Donnees.Jour.VolumeGasoil, StringFormat=Gasoil {0:N0}}" FontSize="15"/>
+                        <TextBlock Text="{Binding Donnees.Jour.VolumeSansPlomb, StringFormat=Sans plomb {0:N0}}" FontSize="15"/>
+                        <TextBlock Text="{Binding Donnees.Jour.VolumeVrac, StringFormat=Livraisons directes {0:N0}}" Foreground="#57606A"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Carte}" Width="220">
+                    <StackPanel>
+                        <TextBlock Text="Marge brute du mois" Style="{StaticResource Etiquette}"/>
+                        <TextBlock Text="{Binding Donnees.Mois.MargeBrute, StringFormat={}{0:N2} DH}" FontSize="20" FontWeight="SemiBold"
+                                   Visibility="{Binding Donnees.MargesMasquees, Converter={StaticResource Invisible}}"/>
+                        <TextBlock Text="Accès non autorisé" Foreground="#8C959F" Visibility="{Binding Donnees.MargesMasquees, Converter={StaticResource Visible}}"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Carte}" Width="220">
+                    <StackPanel>
+                        <TextBlock Text="Trésorerie disponible" Style="{StaticResource Etiquette}"/>
+                        <TextBlock Text="{Binding Donnees.TresorerieDisponible, StringFormat={}{0:N2} DH}" FontSize="20" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Donnees.FondsEnTransit, StringFormat='En transit (TPE, chèques) : {0:N2}'}" Foreground="#57606A"/>
+                        <TextBlock Text="{Binding Donnees.TresorerieJ30, StringFormat=Prévision à 30 jours : {0:N2}}" Foreground="#57606A"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Carte}" Width="220">
+                    <StackPanel>
+                        <TextBlock Text="Créances / dettes" Style="{StaticResource Etiquette}"/>
+                        <TextBlock Text="{Binding Donnees.Creances, StringFormat=À encaisser {0:N2}}" FontSize="15"/>
+                        <TextBlock Text="{Binding Donnees.Dettes, StringFormat=À payer {0:N2}}" FontSize="15"/>
+                        <TextBlock Foreground="#57606A">
+                            <Run Text="{Binding Donnees.PostesOuverts, Mode=OneWay}"/> poste(s) ouvert(s), <Run Text="{Binding Donnees.PostesAValider, Mode=OneWay}"/> à valider
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <TextBlock Text="Alertes" Style="{StaticResource SousTitre}"/>
+            <DataGrid ItemsSource="{Binding Alertes}" MaxHeight="260">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Gravité" Binding="{Binding Gravite}" Width="90"/>
+                    <DataGridTextColumn Header="Module" Binding="{Binding Module}" Width="110"/>
+                    <DataGridTextColumn Header="Constat" Binding="{Binding Message}" Width="*"/>
+                </DataGrid.Columns>
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Gravite}" Value="Critique"><Setter Property="Foreground" Value="#B42318"/><Setter Property="FontWeight" Value="SemiBold"/></DataTrigger>
+                            <DataTrigger Binding="{Binding Gravite}" Value="Attention"><Setter Property="Foreground" Value="#9A6700"/></DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
+
+            <TextBlock Text="Cuves" Style="{StaticResource SousTitre}"/>
+            <DataGrid ItemsSource="{Binding Cuves}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Cuve" Binding="{Binding Code}" Width="90"/>
+                    <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="150"/>
+                    <DataGridTextColumn Header="Stock théorique (L)" Binding="{Binding StockTheorique, StringFormat=N0}" Width="140"/>
+                    <DataGridTextColumn Header="Capacité (L)" Binding="{Binding Capacite, StringFormat=N0}" Width="110"/>
+                    <DataGridTemplateColumn Header="Remplissage" Width="160">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate><ProgressBar Value="{Binding TauxRemplissagePct, Mode=OneWay}" Maximum="100" Height="12" Margin="4,0"/></DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Couverture (jours)" Binding="{Binding JoursCouverture, StringFormat=N1}" Width="130"/>
+                    <DataGridCheckBoxColumn Header="Sous le seuil" Binding="{Binding SousSeuil}" Width="100"/>
+                    <DataGridTextColumn Header="Dernier écart jaugeage (L)" Binding="{Binding DernierEcartLitres, StringFormat=N0}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Text="Évolution sur 30 jours" Style="{StaticResource SousTitre}"/>
+            <Border Style="{StaticResource Carte}" Height="300">
+                <lvc:CartesianChart Series="{Binding Series}" XAxes="{Binding AxeX}" YAxes="{Binding AxesY}" LegendPosition="Top"/>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

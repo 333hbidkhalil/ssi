@@ -150,7 +150,8 @@ public class TresorerieController(ServiceTresorerie tresorerie) : ControllerBase
     public Task<SessionCaisseDto> CloturerCaisse(Guid id, ClotureCaisseDto dto, CancellationToken ct) => tresorerie.CloturerCaisseAsync(id, dto, ct);
 
     [HttpPost("caisse/sessions/{id:guid}/validation"), Autorise(P.CaisseValider), Idempotent]
-    public Task<SessionCaisseDto> ValiderCaisse(Guid id, MotifDto? dto, CancellationToken ct) => tresorerie.ValiderCaisseAsync(id, dto, ct);
+    public Task<SessionCaisseDto> ValiderCaisse(Guid id, MotifOptionnelDto? dto, CancellationToken ct)
+        => tresorerie.ValiderCaisseAsync(id, string.IsNullOrWhiteSpace(dto?.Motif) ? null : new MotifDto(dto.Motif), ct);
 
     [HttpPost("caisse/sessions/{id:guid}/reouverture"), Autorise(P.CaisseRouvrir)]
     public Task<SessionCaisseDto> RouvrirCaisse(Guid id, MotifDto dto, CancellationToken ct) => tresorerie.RouvrirCaisseAsync(id, dto.Motif, ct);

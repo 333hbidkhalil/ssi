@@ -1,0 +1,43 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.RapportsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TabControl>
+        <TabItem Header="Rapports">
+            <DockPanel Margin="8">
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <ComboBox ItemsSource="{Binding Catalogue}" SelectedItem="{Binding Rapport}" DisplayMemberPath="Value" MinWidth="220"/>
+                    <TextBlock Text="du" Style="{StaticResource Etiquette}"/>
+                    <DatePicker SelectedDate="{Binding Du}"/>
+                    <TextBlock Text="au" Style="{StaticResource Etiquette}"/>
+                    <DatePicker SelectedDate="{Binding Au}"/>
+                    <ComboBox ItemsSource="{Binding Produits}" SelectedItem="{Binding Produit}" DisplayMemberPath="Designation" MinWidth="140" ToolTip="Filtre produit (facultatif)"/>
+                    <ComboBox ItemsSource="{Binding Comptes}" SelectedItem="{Binding Compte}" DisplayMemberPath="Libelle" MinWidth="140" ToolTip="Filtre compte (trésorerie)"/>
+                    <Button Content="Afficher" Style="{StaticResource Principal}" Command="{Binding GenererCommand}"/>
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding PeutExporter, Converter={StaticResource Visible}}">
+                        <Button Content="CSV" Command="{Binding ExporterCsvCommand}" MinWidth="60"/>
+                        <Button Content="Excel" Command="{Binding ExporterExcelCommand}" MinWidth="60"/>
+                        <Button Content="PDF" Command="{Binding ExporterPdfCommand}" MinWidth="60"/>
+                    </StackPanel>
+                </WrapPanel>
+                <TextBlock DockPanel.Dock="Top" Text="{Binding Entete}" Foreground="#57606A" Margin="0,0,0,6"/>
+                <TextBlock DockPanel.Dock="Bottom" Text="{Binding Totaux}" FontWeight="SemiBold" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                <DataGrid ItemsSource="{Binding Donnees}" AutoGenerateColumns="True"/>
+            </DockPanel>
+        </TabItem>
+        <TabItem Header="Contrôles de cohérence">
+            <DockPanel Margin="8">
+                <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="#57606A" Margin="0,0,0,6"
+                           Text="Recalcule les stocks, soldes, affectations de règlements et écritures des postes à partir des mouvements, et signale toute différence."/>
+                <Button DockPanel.Dock="Top" Content="Lancer les contrôles" Command="{Binding ControlerCommand}" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                <ListBox DockPanel.Dock="Bottom" ItemsSource="{Binding Controle.Details}" MaxHeight="180" Margin="0,8,0,0"/>
+                <DataGrid ItemsSource="{Binding Controles}" SelectedItem="{Binding Controle}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Contrôle" Binding="{Binding Libelle}" Width="*"/>
+                        <DataGridCheckBoxColumn Header="Conforme" Binding="{Binding Conforme}" Width="80"/>
+                        <DataGridTextColumn Header="Anomalies" Binding="{Binding Anomalies}" Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+    </TabControl>
+</UserControl>

@@ -1,0 +1,120 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.FacturesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <ComboBox ItemsSource="{Binding Sens}" SelectedItem="{Binding SensFiltre}" MinWidth="110"/>
+            <TextBlock Text="du" Style="{StaticResource Etiquette}"/>
+            <DatePicker SelectedDate="{Binding Du}"/>
+            <TextBlock Text="au" Style="{StaticResource Etiquette}"/>
+            <DatePicker SelectedDate="{Binding Au}"/>
+            <CheckBox Content="Non soldées seulement" IsChecked="{Binding SeulementNonSoldees}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <Button Content="Rechercher" Command="{Binding RechercherCommand}"/>
+            <Border BorderBrush="{StaticResource Bordure}" BorderThickness="1,0,0,0" Margin="8,0" Padding="8,0,0,0" Visibility="{Binding PeutValider, Converter={StaticResource Visible}}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Facturer les bons de" Style="{StaticResource Etiquette}"/>
+                    <ComboBox ItemsSource="{Binding Clients}" SelectedItem="{Binding ClientBons}" DisplayMemberPath="Nom" MinWidth="160"/>
+                    <TextBlock Text="jusqu'au" Style="{StaticResource Etiquette}"/>
+                    <DatePicker SelectedDate="{Binding Jusqua}"/>
+                    <Button Content="Facturer" Command="{Binding FacturerBonsCommand}"/>
+                </StackPanel>
+            </Border>
+        </WrapPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="200"/>
+            </Grid.RowDefinitions>
+            <DataGrid ItemsSource="{Binding Factures}" SelectedItem="{Binding FactureSelectionnee}" Margin="0,0,12,0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="120"/>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yy}" Width="70"/>
+                    <DataGridTextColumn Header="Tiers" Binding="{Binding Tiers}" Width="*"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="60"/>
+                    <DataGridTextColumn Header="Origine" Binding="{Binding Origine}" Width="85"/>
+                    <DataGridTextColumn Header="TTC" Binding="{Binding TotalTtc, StringFormat=N2}" Width="95"/>
+                    <DataGridTextColumn Header="Reste dû" Binding="{Binding ResteDu, StringFormat=N2}" Width="95"/>
+                    <DataGridTextColumn Header="Retard (j)" Binding="{Binding JoursRetard}" Width="65"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="70"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel Visibility="{Binding Detail, Converter={StaticResource SiTexte}}">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Content="Valider" Style="{StaticResource Principal}" Command="{Binding ValiderCommand}" IsEnabled="{Binding PeutValider}"/>
+                            <Button Content="PDF" Command="{Binding ImprimerCommand}"/>
+                            <Button Content="Annuler…" Command="{Binding AnnulerCommand}" IsEnabled="{Binding PeutAnnuler}"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock FontSize="16" FontWeight="SemiBold"><Run Text="{Binding Detail.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Tiers, Mode=OneWay}"/></TextBlock>
+                            <TextBlock Foreground="#57606A">
+                                <Run Text="{Binding Detail.Statut, Mode=OneWay}"/> · <Run Text="{Binding Detail.Etat, Mode=OneWay}"/> · échéance
+                                <Run Text="{Binding Detail.Echeance, Mode=OneWay, StringFormat=dd/MM/yyyy}"/> · réf. tiers <Run Text="{Binding Detail.NumeroTiers, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </DockPanel>
+                    <DataGrid ItemsSource="{Binding Detail.Lignes}" Margin="0,8,0,0" MaxHeight="220">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Désignation" Binding="{Binding Designation}" Width="*"/>
+                            <DataGridTextColumn Header="Qté" Binding="{Binding Quantite, StringFormat=N2}" Width="80"/>
+                            <DataGridTextColumn Header="PU HT" Binding="{Binding PrixUnitaireHt, StringFormat=N4}" Width="80"/>
+                            <DataGridTextColumn Header="TVA" Binding="{Binding TauxTva, StringFormat=P0}" Width="50"/>
+                            <DataGridTextColumn Header="HT" Binding="{Binding MontantHt, StringFormat=N2}" Width="95"/>
+                            <DataGridTextColumn Header="TTC" Binding="{Binding MontantTtc, StringFormat=N2}" Width="95"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock HorizontalAlignment="Right" Margin="0,6,0,0">
+                        HT <Run Text="{Binding Detail.TotalHt, Mode=OneWay, StringFormat=N2}"/> · TVA <Run Text="{Binding Detail.TotalTva, Mode=OneWay, StringFormat=N2}"/> ·
+                        TTC <Run Text="{Binding Detail.TotalTtc, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> · réglé <Run Text="{Binding Detail.Regle, Mode=OneWay, StringFormat=N2}"/> ·
+                        avoirs <Run Text="{Binding Detail.AvoirsImputes, Mode=OneWay, StringFormat=N2}"/> · reste dû <Run Text="{Binding Detail.ResteDu, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/>
+                    </TextBlock>
+                    <ItemsControl ItemsSource="{Binding Detail.Avertissements}">
+                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding StringFormat=• {0}}" Foreground="{StaticResource Attention}" TextWrapping="Wrap"/></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Border Style="{StaticResource Carte}" Margin="0,10,0,0" Visibility="{Binding PeutRegler, Converter={StaticResource Visible}}">
+                        <StackPanel>
+                            <TextBlock Text="Enregistrer un règlement sur cette facture" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                            <WrapPanel>
+                                <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding ModeReglement}" MinWidth="100" Margin="0,0,8,4"/>
+                                <ComboBox ItemsSource="{Binding Comptes}" SelectedItem="{Binding Compte}" DisplayMemberPath="Libelle" MinWidth="150" Margin="0,0,8,4" ToolTip="Vide = compte par défaut du mode"/>
+                                <TextBlock Text="Montant" Style="{StaticResource Etiquette}"/>
+                                <TextBox Text="{Binding Montant, UpdateSourceTrigger=PropertyChanged}" Width="100" Margin="0,0,8,4"/>
+                                <TextBlock Text="Réf." Style="{StaticResource Etiquette}"/>
+                                <TextBox Text="{Binding Reference}" Width="110" Margin="0,0,8,4"/>
+                                <DatePicker SelectedDate="{Binding DateReglement}" Margin="0,0,8,4"/>
+                                <Button Content="Enregistrer" Style="{StaticResource Principal}" Command="{Binding ReglerCommand}"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+                    <Button DockPanel.Dock="Right" Content="Annuler le règlement…" Command="{Binding AnnulerReglementCommand}" IsEnabled="{Binding PeutAnnulerReglement}" Margin="0"/>
+                    <TextBlock Text="Règlements de la période" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </DockPanel>
+                <DataGrid ItemsSource="{Binding Reglements}" SelectedItem="{Binding ReglementSelectionne}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="120"/>
+                        <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yy}" Width="75"/>
+                        <DataGridTextColumn Header="Tiers" Binding="{Binding Tiers}" Width="*"/>
+                        <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="80"/>
+                        <DataGridTextColumn Header="Compte" Binding="{Binding Compte}" Width="130"/>
+                        <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
+                        <DataGridTextColumn Header="Non affecté" Binding="{Binding NonAffecte, StringFormat=N2}" Width="90"/>
+                        <DataGridTextColumn Header="Réf." Binding="{Binding Reference}" Width="100"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,144 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.PostesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="330"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Liste des postes -->
+        <DockPanel Margin="0,0,12,0">
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                <Button Content="Ouvrir un poste" Style="{StaticResource Principal}" Command="{Binding OuvrirPosteCommand}"
+                        Visibility="{Binding PeutCreer, Converter={StaticResource Visible}}"/>
+            </StackPanel>
+            <DataGrid ItemsSource="{Binding Postes}" SelectedItem="{Binding PosteSelectionne}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Poste" Binding="{Binding Numero}" Width="*"/>
+                    <DataGridTextColumn Header="Journée" Binding="{Binding JourneeExploitation, StringFormat=dd/MM}" Width="60"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="70"/>
+                    <DataGridTextColumn Header="Écart" Binding="{Binding Ecart, StringFormat=N2}" Width="80"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+
+        <!-- Détail du poste -->
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding Detail, Converter={StaticResource SiTexte}}">
+            <StackPanel>
+                <Border Style="{StaticResource Carte}">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Content="Clôturer" Command="{Binding CloturerCommand}"/>
+                            <Button Content="Valider le poste" Style="{StaticResource Principal}" Command="{Binding ValiderCommand}"
+                                    Visibility="{Binding PeutValider, Converter={StaticResource Visible}}"/>
+                            <Button Content="Rouvrir…" Command="{Binding RouvrirCommand}" Visibility="{Binding PeutRouvrir, Converter={StaticResource Visible}}"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock FontSize="16" FontWeight="SemiBold">
+                                <Run Text="{Binding Detail.Poste.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Poste.Statut, Mode=OneWay}"/>
+                            </TextBlock>
+                            <TextBlock Foreground="#57606A">
+                                Ventes théoriques <Run Text="{Binding Detail.Rapport.MontantTheoriqueTtc, Mode=OneWay, StringFormat=N2}"/> DH ·
+                                Règlements <Run Text="{Binding Detail.Rapport.TotalReglements, Mode=OneWay, StringFormat=N2}"/> DH ·
+                                Écart <Run Text="{Binding Detail.Rapport.Ecart, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> DH
+                            </TextBlock>
+                            <TextBlock Text="{Binding Detail.Rapport.InterpretationEcart}" Foreground="#57606A" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <TextBlock Text="Saisie des index de fin" Style="{StaticResource SousTitre}" Visibility="{Binding Saisies.Count, Converter={StaticResource SiTexte}}"/>
+                <ItemsControl ItemsSource="{Binding Saisies}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{StaticResource Bordure}" BorderThickness="0,0,0,1" Padding="0,5">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Width="190" VerticalAlignment="Center">
+                                        <Run Text="{Binding Preparation.Volucompteur, Mode=OneWay}"/> / <Run Text="{Binding Preparation.Pistolet, Mode=OneWay}" FontWeight="SemiBold"/>
+                                        <LineBreak/><Run Text="{Binding Preparation.Produit, Mode=OneWay}" Foreground="#57606A"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Preparation.IndexDebutPropose, StringFormat=Début {0:N3}}" Width="150" VerticalAlignment="Center"/>
+                                    <TextBox Text="{Binding IndexFin, UpdateSourceTrigger=PropertyChanged}" Width="130" IsEnabled="{Binding Enregistre, Converter={StaticResource Non}}"/>
+                                    <TextBlock Text="{Binding VolumeCalcule, StringFormat={}{0:N3} L}" Width="110" VerticalAlignment="Center"/>
+                                    <Button Content="Enregistrer" Command="{Binding DataContext.EnregistrerReleveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}" Visibility="{Binding Enregistre, Converter={StaticResource Invisible}}"/>
+                                    <TextBlock Text="{Binding Message}" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="320" Foreground="#57606A"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <DockPanel Margin="0,12,0,6">
+                    <Button DockPanel.Dock="Right" Content="Annuler le relevé…" Command="{Binding AnnulerReleveCommand}" Margin="0"/>
+                    <TextBlock Text="Relevés du poste" Style="{StaticResource SousTitre}" Margin="0"/>
+                </DockPanel>
+                <DataGrid ItemsSource="{Binding Detail.Releves}" SelectedItem="{Binding ReleveSelectionne}" MaxHeight="260">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Volucompteur" Binding="{Binding Volucompteur}" Width="110"/>
+                        <DataGridTextColumn Header="Pistolet" Binding="{Binding Pistolet}" Width="80"/>
+                        <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="110"/>
+                        <DataGridTextColumn Header="Index début" Binding="{Binding IndexDebut, StringFormat=N3}" Width="110"/>
+                        <DataGridTextColumn Header="Index fin" Binding="{Binding IndexFin, StringFormat=N3}" Width="110"/>
+                        <DataGridTextColumn Header="Volume (L)" Binding="{Binding Volume, StringFormat=N3}" Width="90"/>
+                        <DataGridTextColumn Header="Prix TTC" Binding="{Binding PrixUnitaireTtc, StringFormat=N2}" Width="70"/>
+                        <DataGridTextColumn Header="Montant TTC" Binding="{Binding MontantTtc, StringFormat=N2}" Width="100"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="Règlements reçus" Style="{StaticResource SousTitre}"/>
+                <WrapPanel Margin="0,0,0,6">
+                    <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding NouveauMode}" MinWidth="110"/>
+                    <TextBlock Text="Montant" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding NouveauMontant, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding EstCredit, Converter={StaticResource Visible}}">
+                        <TextBlock Text="Client" Style="{StaticResource Etiquette}"/>
+                        <ComboBox ItemsSource="{Binding ClientsCredit}" SelectedItem="{Binding NouveauClient}" DisplayMemberPath="Nom" MinWidth="170"/>
+                        <ComboBox ItemsSource="{Binding Carburants}" SelectedItem="{Binding NouveauProduit}" DisplayMemberPath="Designation" MinWidth="120"/>
+                        <TextBlock Text="Litres" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding NouveauVolume, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+                    </StackPanel>
+                    <TextBlock Text="Réf." Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding NouvelleReference}" Width="110"/>
+                    <Button Content="Ajouter" Command="{Binding AjouterReglementCommand}"/>
+                    <Button Content="Supprimer" Command="{Binding SupprimerReglementCommand}"/>
+                </WrapPanel>
+                <DataGrid ItemsSource="{Binding Detail.Reglements}" SelectedItem="{Binding ReglementSelectionne}" MaxHeight="220">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="90"/>
+                        <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
+                        <DataGridTextColumn Header="Client" Binding="{Binding Client}" Width="160"/>
+                        <DataGridTextColumn Header="Litres" Binding="{Binding Volume, StringFormat=N2}" Width="80"/>
+                        <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="*"/>
+                        <DataGridCheckBoxColumn Header="Facturé" Binding="{Binding Facture}" Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="Synthèse par produit et par mode" Style="{StaticResource SousTitre}"/>
+                <StackPanel Orientation="Horizontal">
+                    <DataGrid ItemsSource="{Binding Detail.Rapport.ParProduit}" Width="520" Margin="0,0,12,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="*"/>
+                            <DataGridTextColumn Header="Litres" Binding="{Binding Volume, StringFormat=N2}" Width="90"/>
+                            <DataGridTextColumn Header="TTC" Binding="{Binding MontantTtc, StringFormat=N2}" Width="100"/>
+                            <DataGridTextColumn Header="dont bons (L)" Binding="{Binding VolumeBonsCredit, StringFormat=N2}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <DataGrid ItemsSource="{Binding Detail.Rapport.ParMode}" Width="260">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="*"/>
+                            <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="110"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding Detail.Rapport.Alertes}" Margin="0,8,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate><TextBlock Text="{Binding StringFormat=• {0}}" Foreground="{StaticResource Attention}" TextWrapping="Wrap"/></DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -54,4 +54,7 @@ public sealed record ReferenceDto(Guid Id, string Code, string Libelle);
 
 public sealed record MotifDto(string Motif);
 
+/// <summary>Motif facultatif (exigé par la règle métier seulement dans certains cas, par ex. écart de caisse au-delà du seuil).</summary>
+public sealed record MotifOptionnelDto(string? Motif);
+
 public sealed record AnomalieDto(string Code, string Message, bool Bloquante);

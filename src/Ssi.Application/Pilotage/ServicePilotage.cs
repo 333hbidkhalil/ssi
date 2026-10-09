@@ -152,6 +152,13 @@ public class ServicePilotage(ISsiDb db, IHorloge horloge, IUtilisateurCourant co
         if (moisPrecedent > 0 && moisCourant > moisPrecedent * (1 + hausse / 100))
             a.Add(new("HAUSSE_CHARGES", GraviteAlerte.Info, "Charges", $"Charges du mois ({moisCourant:N2} DH) supérieures de plus de {hausse:N0} % au mois précédent ({moisPrecedent:N2} DH).", null, null));
 
+        // Sauvegarde : seule une sauvegarde dont la restauration de contrôle a réussi compte
+        var derniere = await db.Sauvegardes.Where(s => s.Statut == "VERIFIEE").MaxAsync(s => (DateTimeOffset?)s.Horodatage, ct);
+        if (derniere is null || derniere < maintenant.AddHours(-26))
+            a.Add(new("SAUVEGARDE", GraviteAlerte.Critique, "Administration", derniere is null
+                ? "Aucune sauvegarde vérifiée n'est enregistrée : les données ne sont pas protégées contre une panne du serveur."
+                : $"Dernière sauvegarde vérifiée le {derniere.Value.ToLocalTime():dd/MM/yyyy HH:mm} : plus de 26 heures.", null, null));
+
         return a.OrderByDescending(x => x.Gravite).ThenBy(x => x.Module).ToList();
     }
 

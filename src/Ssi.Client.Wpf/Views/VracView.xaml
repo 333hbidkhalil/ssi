@@ -1,0 +1,152 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.VracView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="420"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Margin="0,0,12,0">
+            <Border DockPanel.Dock="Top" Style="{StaticResource Carte}" Visibility="{Binding PeutCreer, Converter={StaticResource Visible}}">
+                <StackPanel>
+                    <TextBlock Text="Nouvelle commande client" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                    <WrapPanel>
+                        <ComboBox ItemsSource="{Binding Clients}" SelectedItem="{Binding Client}" DisplayMemberPath="Nom" MinWidth="170" Margin="0,0,8,4"/>
+                        <ComboBox ItemsSource="{Binding Carburants}" SelectedItem="{Binding Produit}" DisplayMemberPath="Designation" MinWidth="120" Margin="0,0,8,4"/>
+                        <TextBlock Text="Litres" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding Volume, UpdateSourceTrigger=PropertyChanged}" Width="80" Margin="0,0,8,4"/>
+                        <TextBlock Text="Prix HT/L" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding PrixVente, UpdateSourceTrigger=PropertyChanged}" Width="70" Margin="0,0,8,4"/>
+                        <DatePicker SelectedDate="{Binding DatePrevue}" Margin="0,0,8,4"/>
+                        <TextBox Text="{Binding Lieu}" Width="150" ToolTip="Lieu de livraison" Margin="0,0,8,4"/>
+                        <Button Content="Créer" Style="{StaticResource Principal}" Command="{Binding CreerCommandeCommand}"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+            <DataGrid ItemsSource="{Binding Commandes}" SelectedItem="{Binding CommandeSelectionnee}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="110"/>
+                    <DataGridTextColumn Header="Client" Binding="{Binding Client}" Width="*"/>
+                    <DataGridTextColumn Header="Litres" Binding="{Binding Volume, StringFormat=N0}" Width="70"/>
+                    <DataGridTextColumn Header="Livré" Binding="{Binding VolumeLivre, StringFormat=N0}" Width="70"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Visibility="{Binding Detail, Converter={StaticResource SiTexte}}">
+            <StackPanel>
+                <Border Style="{StaticResource Carte}">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top">
+                            <Button Content="Confirmer" Style="{StaticResource Principal}" Command="{Binding ConfirmerCommand}" IsEnabled="{Binding PeutValider}"/>
+                            <Button Content="Facturer" Command="{Binding FacturerCommand}" IsEnabled="{Binding PeutFacturer}"/>
+                            <Button Content="Annuler…" Command="{Binding AnnulerCommandeCommand}" IsEnabled="{Binding PeutAnnuler}"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock FontSize="16" FontWeight="SemiBold">
+                                <Run Text="{Binding Detail.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Client, Mode=OneWay}"/> — <Run Text="{Binding Detail.Statut, Mode=OneWay}"/>
+                            </TextBlock>
+                            <TextBlock Foreground="#57606A">
+                                <Run Text="{Binding Detail.Produit, Mode=OneWay}"/> · <Run Text="{Binding Detail.Volume, Mode=OneWay, StringFormat=N0}"/> L à
+                                <Run Text="{Binding Detail.PrixVenteHt, Mode=OneWay, StringFormat=N4}"/> DH HT/L · livré <Run Text="{Binding Detail.VolumeLivre, Mode=OneWay, StringFormat=N0}"/> L
+                            </TextBlock>
+                            <TextBlock Text="{Binding Detail.DerogationMotif, StringFormat=Dérogation de marge : {0}}" Foreground="{StaticResource Attention}"
+                                       Visibility="{Binding Detail.DerogationMotif, Converter={StaticResource SiTexte}}"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <Border Style="{StaticResource Carte}" Visibility="{Binding Detail.Marge, Converter={StaticResource SiTexte}}">
+                    <StackPanel>
+                        <TextBlock FontWeight="SemiBold" Text="Marge de l'opération"/>
+                        <UniformGrid Columns="5" Margin="0,6,0,0">
+                            <StackPanel><TextBlock Text="CA net HT" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.Marge.ChiffreAffairesNetHt, StringFormat=N2}" FontSize="15"/></StackPanel>
+                            <StackPanel><TextBlock Text="Coût d'achat HT" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.Marge.CoutAchatHt, StringFormat=N2}" FontSize="15"/></StackPanel>
+                            <StackPanel><TextBlock Text="Transport et frais" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.Marge.CoutDirectHt, StringFormat=N2}" FontSize="15"/></StackPanel>
+                            <StackPanel><TextBlock Text="Marge réelle" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.Marge.MargeReelle, StringFormat=N2}" FontSize="15" FontWeight="SemiBold"/></StackPanel>
+                            <StackPanel><TextBlock Text="Marge prévue" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.Marge.MargePrevue, StringFormat=N2}" FontSize="15"/></StackPanel>
+                        </UniformGrid>
+                        <TextBlock Margin="0,6,0,0" Foreground="#57606A">
+                            Reste à encaisser <Run Text="{Binding Detail.Marge.ResteAEncaisser, Mode=OneWay, StringFormat=N2}"/> · reste à payer
+                            <Run Text="{Binding Detail.Marge.ResteAPayer, Mode=OneWay, StringFormat=N2}"/> · écart quantité <Run Text="{Binding Detail.Marge.EcartQuantiteLitres, Mode=OneWay, StringFormat=N0}"/> L
+                        </TextBlock>
+                        <StackPanel Visibility="{Binding Detail.Marge.Provisoire, Converter={StaticResource Visible}}">
+                            <TextBlock Text="Marge provisoire — données manquantes :" Foreground="{StaticResource Attention}" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                            <ItemsControl ItemsSource="{Binding Detail.Marge.DonneesManquantes}">
+                                <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding StringFormat=• {0}}" Foreground="{StaticResource Attention}"/></DataTemplate></ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="Commande fournisseur liée" Style="{StaticResource SousTitre}"/>
+                <WrapPanel IsEnabled="{Binding PeutCreer}">
+                    <ComboBox ItemsSource="{Binding Fournisseurs}" SelectedItem="{Binding Fournisseur}" DisplayMemberPath="Nom" MinWidth="170"/>
+                    <TextBlock Text="Litres" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding VolumeFournisseur}" Width="80" ToolTip="Vide = volume de la commande client"/>
+                    <TextBlock Text="Prix achat HT/L" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding PrixAchat, UpdateSourceTrigger=PropertyChanged}" Width="70"/>
+                    <TextBlock Text="Frais prévus HT" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding FraisPrevus}" Width="80"/>
+                    <Button Content="Lier" Command="{Binding AjouterCommandeFournisseurCommand}"/>
+                </WrapPanel>
+                <DataGrid ItemsSource="{Binding Detail.CommandesFournisseur}" SelectedItem="{Binding CommandeFournisseur}" MaxHeight="120" Margin="0,6,0,0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="120"/>
+                        <DataGridTextColumn Header="Fournisseur" Binding="{Binding Fournisseur}" Width="*"/>
+                        <DataGridTextColumn Header="Total HT" Binding="{Binding TotalHt, StringFormat=N2}" Width="110"/>
+                        <DataGridTextColumn Header="Frais prévus" Binding="{Binding FraisPrevusHt, StringFormat=N2}" Width="100"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="Livraisons" Style="{StaticResource SousTitre}"/>
+                <WrapPanel IsEnabled="{Binding PeutCreer}">
+                    <TextBlock Text="Chargé (L)" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding QuantiteChargee, UpdateSourceTrigger=PropertyChanged}" Width="80" Margin="0,0,8,4"/>
+                    <TextBlock Text="Livré (L)" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding QuantiteLivree}" Width="80" Margin="0,0,8,4"/>
+                    <TextBlock Text="BL fournisseur" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding NumeroBl}" Width="100" Margin="0,0,8,4"/>
+                    <TextBlock Text="N° réception client" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding NumeroReception}" Width="100" Margin="0,0,8,4"/>
+                    <TextBlock Text="Véhicule" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding Vehicule}" Width="90" Margin="0,0,8,4"/>
+                    <TextBlock Text="Chauffeur" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding Chauffeur}" Width="110" Margin="0,0,8,4"/>
+                    <TextBlock Text="Justification d'écart" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding Justification}" Width="200" Margin="0,0,8,4"/>
+                    <Button Content="Enregistrer la livraison" Command="{Binding EnregistrerLivraisonCommand}"/>
+                </WrapPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,6">
+                    <Button Content="Valider la livraison" Style="{StaticResource Principal}" Command="{Binding ValiderLivraisonCommand}" IsEnabled="{Binding PeutValider}"/>
+                    <Button Content="Annuler la livraison…" Command="{Binding AnnulerLivraisonCommand}" IsEnabled="{Binding PeutAnnuler}"/>
+                </StackPanel>
+                <DataGrid ItemsSource="{Binding Detail.Livraisons}" SelectedItem="{Binding Livraison}" MaxHeight="200">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="110"/>
+                        <DataGridTextColumn Header="Date" Binding="{Binding Horodatage, StringFormat=dd/MM HH:mm}" Width="85"/>
+                        <DataGridTextColumn Header="Fournisseur" Binding="{Binding Fournisseur}" Width="*"/>
+                        <DataGridTextColumn Header="Chargé" Binding="{Binding QuantiteChargee, StringFormat=N0}" Width="70"/>
+                        <DataGridTextColumn Header="Livré" Binding="{Binding QuantiteLivree, StringFormat=N0}" Width="70"/>
+                        <DataGridTextColumn Header="Écart %" Binding="{Binding EcartPct, StringFormat=N2}" Width="65"/>
+                        <DataGridTextColumn Header="BL" Binding="{Binding NumeroBlFournisseur}" Width="80"/>
+                        <DataGridTextColumn Header="Récep. client" Binding="{Binding NumeroReceptionClient}" Width="90"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="75"/>
+                        <DataGridCheckBoxColumn Header="Facturée" Binding="{Binding Facturee}" Width="65"/>
+                        <DataGridTextColumn Header="Frais HT" Binding="{Binding FraisDirectsHt, StringFormat=N2}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <TextBlock Text="Frais directs (transport…)" Style="{StaticResource SousTitre}"/>
+                <WrapPanel IsEnabled="{Binding PeutCreer}">
+                    <TextBox Text="{Binding LibelleFrais}" Width="180"/>
+                    <TextBlock Text="Montant HT" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding MontantFrais, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                    <Button Content="Répartir sur les livraisons validées" Command="{Binding SaisirFraisCommand}"/>
+                </WrapPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,139 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.StocksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TabControl>
+        <TabItem Header="Cuves et jaugeages">
+            <DockPanel Margin="8">
+                <DataGrid DockPanel.Dock="Top" ItemsSource="{Binding Cuves}" SelectedItem="{Binding Cuve}" MaxHeight="200">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Cuve" Binding="{Binding Code}" Width="80"/>
+                        <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="130"/>
+                        <DataGridTextColumn Header="Théorique (L)" Binding="{Binding StockTheorique, StringFormat=N0}" Width="110"/>
+                        <DataGridTextColumn Header="Capacité" Binding="{Binding Capacite, StringFormat=N0}" Width="90"/>
+                        <DataGridTextColumn Header="Remplissage" Binding="{Binding TauxRemplissagePct, StringFormat={}{0:N0} %}" Width="90"/>
+                        <DataGridTextColumn Header="CMP HT" Binding="{Binding Cmp, StringFormat=N4}" Width="80"/>
+                        <DataGridTextColumn Header="Valeur HT" Binding="{Binding Valeur, StringFormat=N2}" Width="110"/>
+                        <DataGridTextColumn Header="Dernier jaugeage" Binding="{Binding DernierJaugeage, StringFormat=dd/MM HH:mm}" Width="110"/>
+                        <DataGridTextColumn Header="Écart (L)" Binding="{Binding DernierEcartLitres, StringFormat=N0}" Width="80"/>
+                        <DataGridCheckBoxColumn Header="Hors tolérance" Binding="{Binding DernierEcartHorsTolerance}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <WrapPanel DockPanel.Dock="Top" Margin="0,10,0,6" IsEnabled="{Binding PeutSaisir}">
+                    <TextBlock Text="Jaugeage de la cuve sélectionnée — volume mesuré (L)" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding VolumeMesure, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
+                    <TextBlock Text="Hauteur (cm)" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding Hauteur}" Width="70"/>
+                    <TextBlock Text="T (°C)" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding Temperature}" Width="60"/>
+                    <ComboBox ItemsSource="{Binding Methodes}" SelectedItem="{Binding Methode}" MinWidth="120"/>
+                    <Button Content="Enregistrer le jaugeage" Style="{StaticResource Principal}" Command="{Binding SaisirJaugeageCommand}"/>
+                </WrapPanel>
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                    <TextBlock Text="Jaugeage sélectionné — cause" Style="{StaticResource Etiquette}"/>
+                    <ComboBox ItemsSource="{Binding Causes}" SelectedItem="{Binding Cause}" MinWidth="140"/>
+                    <Button Content="Expliquer l'écart…" Command="{Binding ExpliquerCommand}" IsEnabled="{Binding PeutSaisir}"/>
+                    <Button Content="Demander un ajustement…" Command="{Binding DemanderAjustementCommand}" IsEnabled="{Binding PeutAjuster}"/>
+                    <TextBlock Text="Un écart de jaugeage n'est jamais qualifié de fraude : il est expliqué, puis éventuellement régularisé après approbation." Foreground="#8C959F" VerticalAlignment="Center"/>
+                </WrapPanel>
+                <DataGrid ItemsSource="{Binding Jaugeages}" SelectedItem="{Binding Jaugeage}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding Horodatage, StringFormat=dd/MM/yy HH:mm}" Width="110"/>
+                        <DataGridTextColumn Header="Cuve" Binding="{Binding Cuve}" Width="70"/>
+                        <DataGridTextColumn Header="Mesuré" Binding="{Binding VolumeMesure, StringFormat=N0}" Width="80"/>
+                        <DataGridTextColumn Header="Théorique" Binding="{Binding StockTheorique, StringFormat=N0}" Width="80"/>
+                        <DataGridTextColumn Header="Écart (L)" Binding="{Binding EcartLitres, StringFormat=N0}" Width="75"/>
+                        <DataGridTextColumn Header="Écart %" Binding="{Binding EcartPct, StringFormat=N2}" Width="65"/>
+                        <DataGridTextColumn Header="Valeur indicative" Binding="{Binding ValeurIndicative, StringFormat=N2}" Width="110"/>
+                        <DataGridCheckBoxColumn Header="Hors tol." Binding="{Binding HorsTolerance}" Width="65"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                        <DataGridTextColumn Header="Cause" Binding="{Binding Cause}" Width="110"/>
+                        <DataGridTextColumn Header="Explication" Binding="{Binding Explication}" Width="*"/>
+                        <DataGridTextColumn Header="Par" Binding="{Binding SaisiPar}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+
+        <TabItem Header="Ajustements">
+            <DockPanel Margin="8">
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <CheckBox Content="En attente seulement" IsChecked="{Binding SeulementEnAttente}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding PeutApprouver, Converter={StaticResource Visible}}">
+                        <Button Content="Approuver" Style="{StaticResource Principal}" Command="{Binding ApprouverCommand}"/>
+                        <Button Content="Rejeter…" Command="{Binding RejeterCommand}"/>
+                    </StackPanel>
+                    <TextBlock Text="Le demandeur ne peut pas approuver sa propre demande." Foreground="#8C959F" VerticalAlignment="Center"/>
+                </WrapPanel>
+                <DataGrid ItemsSource="{Binding Ajustements}" SelectedItem="{Binding Ajustement}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="110"/>
+                        <DataGridTextColumn Header="Date" Binding="{Binding CreeLe, StringFormat=dd/MM/yy HH:mm}" Width="105"/>
+                        <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="130"/>
+                        <DataGridTextColumn Header="Cuve" Binding="{Binding Cuve}" Width="70"/>
+                        <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite, StringFormat=N3}" Width="90"/>
+                        <DataGridTextColumn Header="Cause" Binding="{Binding Cause}" Width="110"/>
+                        <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="*"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                        <DataGridTextColumn Header="Demandé par" Binding="{Binding DemandePar}" Width="90"/>
+                        <DataGridTextColumn Header="Décidé par" Binding="{Binding DecidePar}" Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+
+        <TabItem Header="Articles et inventaire">
+            <DockPanel Margin="8">
+                <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8" IsEnabled="{Binding PeutSaisir}">
+                    <TextBlock Text="Article sélectionné — quantité comptée" Style="{StaticResource Etiquette}"/>
+                    <TextBox Text="{Binding QuantiteComptee, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                    <Button Content="Enregistrer l'inventaire…" Command="{Binding InventorierCommand}"/>
+                </WrapPanel>
+                <DataGrid ItemsSource="{Binding Articles}" SelectedItem="{Binding Article}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="90"/>
+                        <DataGridTextColumn Header="Désignation" Binding="{Binding Designation}" Width="*"/>
+                        <DataGridTextColumn Header="Famille" Binding="{Binding Famille}" Width="120"/>
+                        <DataGridTextColumn Header="Stock" Binding="{Binding Quantite, StringFormat=N2}" Width="80"/>
+                        <DataGridTextColumn Header="Unité" Binding="{Binding Unite}" Width="60"/>
+                        <DataGridTextColumn Header="Seuil" Binding="{Binding SeuilAlerte, StringFormat=N0}" Width="60"/>
+                        <DataGridCheckBoxColumn Header="Sous seuil" Binding="{Binding SousSeuil}" Width="75"/>
+                        <DataGridTextColumn Header="CMP HT" Binding="{Binding Cmp, StringFormat=N4}" Width="85"/>
+                        <DataGridTextColumn Header="Valeur HT" Binding="{Binding Valeur, StringFormat=N2}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+
+        <TabItem Header="Mouvements (7 jours)">
+            <DataGrid ItemsSource="{Binding Mouvements}" Margin="8">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Horodatage, StringFormat=dd/MM/yy HH:mm}" Width="105"/>
+                    <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="130"/>
+                    <DataGridTextColumn Header="Cuve" Binding="{Binding Cuve}" Width="70"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120"/>
+                    <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite, StringFormat=N3}" Width="90"/>
+                    <DataGridTextColumn Header="Coût unit." Binding="{Binding CoutUnitaire, StringFormat=N4}" Width="85"/>
+                    <DataGridTextColumn Header="Valeur" Binding="{Binding Valeur, StringFormat=N2}" Width="100"/>
+                    <DataGridTextColumn Header="Stock après" Binding="{Binding QuantiteApres, StringFormat=N3}" Width="100"/>
+                    <DataGridTextColumn Header="Pièce" Binding="{Binding DocumentRef}" Width="120"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </TabItem>
+
+        <TabItem Header="Contrôle de cohérence">
+            <DockPanel Margin="8">
+                <Button DockPanel.Dock="Top" Content="Lancer le contrôle" Command="{Binding ControlerCommand}" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                <DataGrid ItemsSource="{Binding Controles}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Objet" Binding="{Binding Objet}" Width="140"/>
+                        <DataGridTextColumn Header="Contrôle" Binding="{Binding Libelle}" Width="*"/>
+                        <DataGridTextColumn Header="Enregistré" Binding="{Binding ValeurEnregistree, StringFormat=N3}" Width="110"/>
+                        <DataGridTextColumn Header="Recalculé" Binding="{Binding ValeurRecalculee, StringFormat=N3}" Width="110"/>
+                        <DataGridCheckBoxColumn Header="Cohérent" Binding="{Binding Coherent}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+    </TabControl>
+</UserControl>
