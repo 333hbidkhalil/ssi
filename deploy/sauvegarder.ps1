@@ -39,14 +39,22 @@ function Journaliser([string]$statut, [string]$message) {
 function Echec([string]$message, [int]$code) { Journaliser "ECHEC" $message; Write-Error $message -ErrorAction Continue; exit $code }
 
 # Session psql qui garde l'instantané ouvert
-$psi = New-Object System.Diagnostics.ProcessStartInfo $psql, "-X -q -A -t -d $Base"
-$psi.RedirectStandardInput = $true; $psi.RedirectStandardOutput = $true; $psi.UseShellExecute = $false
+# ON_ERROR_STOP : une requête de contrôle en erreur termine la session au lieu de laisser le script attendre indéfiniment.
+$psi = New-Object System.Diagnostics.ProcessStartInfo $psql, "-X -q -A -t -v ON_ERROR_STOP=1 -d $Base"
+$psi.RedirectStandardInput = $true; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true; $psi.UseShellExecute = $false
 $psi.StandardOutputEncoding = [Text.Encoding]::UTF8
 $session = [System.Diagnostics.Process]::Start($psi)
+$erreursSession = $session.StandardError.ReadToEndAsync()
+# Lecture d'une ligne avec délai : $null si la session s'est arrêtée ou n'a pas répondu à temps.
+function LireLigne([int]$secondes) {
+    $t = $session.StandardOutput.ReadLineAsync()
+    if ($t.Wait([TimeSpan]::FromSeconds($secondes))) { return $t.Result }
+    return $null
+}
 try {
     $session.StandardInput.WriteLine("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY; SELECT pg_export_snapshot();")
-    $snapshot = $session.StandardOutput.ReadLine()
-    if (-not $snapshot) { Echec "Impossible d'ouvrir un instantané." 2 }
+    $snapshot = LireLigne 30
+    if (-not $snapshot) { Echec "Impossible d'ouvrir un instantané. $(if ($session.HasExited) { $erreursSession.Result })" 2 }
 
     & $pgdump -Fc "--snapshot=$snapshot" -d $Base -f $fichier
     if ($LASTEXITCODE -ne 0) { Echec "pg_dump a échoué (code $LASTEXITCODE)." 3 }
@@ -55,7 +63,12 @@ try {
     $session.StandardInput.WriteLine((Get-Content -Raw -Encoding UTF8 $controles))
     $session.StandardInput.WriteLine("SELECT '$fin';")
     $source = New-Object System.Collections.Generic.List[string]
-    while (($l = $session.StandardOutput.ReadLine()) -ne $null -and $l -ne $fin) { if ($l) { $source.Add($l) } }
+    $complet = $false
+    while (($l = LireLigne 300) -ne $null) { if ($l -eq $fin) { $complet = $true; break }; if ($l) { $source.Add($l) } }
+    if (-not $complet) {
+        if (-not $session.HasExited) { $session.Kill() }
+        Echec "Totaux de contrôle de la base source impossibles à calculer : $($erreursSession.Result)" 7
+    }
     $session.StandardInput.WriteLine("COMMIT;"); $session.StandardInput.WriteLine("\q")
 } finally { if (-not $session.HasExited) { $session.WaitForExit(10000) | Out-Null } }
 

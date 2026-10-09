@@ -48,10 +48,10 @@ Principes :
 | Données | PostgreSQL 16+, EF Core 10 + Npgsql | Transactions ACID, types `numeric`, contraintes d'exclusion |
 | Auth | JWT porteur signé (HMAC-SHA256), mots de passe PBKDF2 (`PasswordHasher`) | Pas de dépendance à un annuaire |
 | Logs | Serilog (fichiers JSON compacts, rotation quotidienne, 30 jours) | Logs structurés |
-| PDF | QuestPDF (licence Community, gratuite sous 1 M$ de CA annuel — à confirmer pour la société) | Génération de documents |
+| PDF | PDFsharp-MigraDoc 6.2 (MIT) | Rapports et factures PDF. QuestPDF a été écarté : sa licence Community exige un CA annuel inférieur à 1 M$, seuil dépassé par une station |
 | Excel | ClosedXML (MIT) ; CSV natif | Exports |
 | Tests | xUnit, base PostgreSQL réelle pour les tests d'intégration | Les tests de concurrence exigent le vrai moteur |
-| Installation | Script PowerShell serveur + installateur client (WiX Toolset v5 ou Inno Setup) | Voir phase 7 |
+| Installation | Scripts PowerShell : `deploy/installer-serveur.ps1` (service Windows, base, pare-feu, certificat, sauvegarde planifiée) et `deploy/installer-poste.ps1` (client, certificat, raccourci) | Voir `deploy/LISEZMOI.md` |
 
 ## 3. Découpage de la solution
 

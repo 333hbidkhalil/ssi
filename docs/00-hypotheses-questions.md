@@ -10,7 +10,7 @@ Chaque hypothèse est appliquée dans le code tant qu'elle n'est pas révisée. 
 | H-04 | Valorisation des stocks au **coût moyen pondéré** perpétuel, par produit et par cuve (carburants) ou par produit (lubrifiants). | Ajout d'une méthode FIFO |
 | H-05 | Un seul magasin pour les lubrifiants et produits annexes. | Ajout d'emplacements |
 | H-06 | Un poste de travail couvre tous les volucompteurs ; un changement de prix en cours de poste impose une clôture de poste au moment du changement. | Relevés intermédiaires par pistolet |
-| H-07 | Coût d'entrée en stock = prix de commande HT ; un écart de prix constaté sur facture est passé en ajustement de valeur. | — |
+| H-07 | Coût d'entrée en stock = prix de réception HT. À la validation de la facture fournisseur, l'écart (prix facturé − prix de réception) × quantité facturée est incorporé à la valeur du stock de l'emplacement ; la part correspondant aux quantités déjà sorties (approximation : 1 − stock actuel / quantité facturée) est reprise aussitôt en coût de la période. L'annulation de la facture contre-passe ces ajustements. | Affectation exacte par lot (FIFO) |
 | H-08 | Vrac : le client est facturé sur la **quantité livrée**, le fournisseur facture la **quantité chargée** (paramétrable par commande). | Choix de la base de facturation |
 | H-09 | Les bons de crédit station sont regroupés en **facture récapitulative** (mensuelle ou à la demande), sans CA supplémentaire. | — |
 | H-10 | Caisse : une caisse principale + une caisse par poste de piste si configuré ; une seule session ouverte par caisse. | — |
@@ -22,6 +22,13 @@ Chaque hypothèse est appliquée dans le code tant qu'elle n'est pas révisée. 
 | H-16 | Les rémunérations sont du **suivi de gestion** (coût du personnel), sans calcul de paie légale ni déclarations CNSS. | Module paie séparé |
 | H-17 | Les pièces justificatives (≤ 10 Mo) sont stockées en base (`bytea`) pour qu'une sauvegarde unique couvre tout. | Stockage fichier |
 | H-18 | Numérotation : `PREFIXE-AAAA-000001`, remise à 1 chaque année. ⚙ préfixes. | — |
+| H-19 | Le stock d'articles (lubrifiants, annexes) ne peut pas devenir négatif : une vente au-delà du stock est refusée. | Autoriser le négatif avec régularisation |
+| H-20 | Le compte financier par défaut d'un mode de règlement est le **plus ancien** compte actif du type correspondant (espèces → caisse, carte → attente TPE, chèque → chèques à encaisser, virement/effet → banque). | Choix explicite à chaque saisie |
+| H-21 | Les salaires n'entrent dans la rentabilité que lorsqu'ils sont saisis en **charges** (catégorie personnel) ; le module personnel est un suivi, pas une comptabilisation. | Génération automatique des charges de personnel |
+| H-22 | Frais bancaires et écarts de caisse sont répartis entre activités selon la clé « chiffre d'affaires ». | Autre clé paramétrable |
+| H-23 | Vrac : le chiffre d'affaires est rattaché à la date de la facture client ; le coût d'achat et les frais sont rapprochés par livraison ; si la facture fournisseur manque, le coût est estimé au prix de commande et la période est signalée incomplète. | Rattachement à la date de livraison |
+| H-24 | Une alerte « sauvegarde » est levée s'il n'existe aucune sauvegarde **vérifiée** (restauration de contrôle réussie) depuis 26 heures. | Seuil paramétrable |
+| H-25 | La validation d'une session de caisse n'exige une explication que si l'écart dépasse le seuil paramétré ⚙ (`caisse.seuil_alerte_ecart`, 50 DH par défaut). | — |
 
 ## Questions ciblées (réponse attendue du propriétaire)
 

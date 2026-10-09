@@ -28,18 +28,26 @@ if (Test-Path "$Fichier.sha256") {
     }
 } else { Write-Warning "Pas d'empreinte SHA-256 à côté du fichier : intégrité non vérifiable." }
 
-if ((& $psql -X -A -t -d postgres -c "SELECT 1 FROM pg_database WHERE datname = '$Cible'") -eq "1") {
+$existe = (& $psql -X -A -t -d postgres -c "SELECT 1 FROM pg_database WHERE datname = '$Cible'") -eq "1"
+if ($existe -and -not $Basculer) {
     throw "La base $Cible existe déjà. Choisissez un nouveau nom : la restauration n'écrase jamais une base."
 }
-& $psql -X -q -v ON_ERROR_STOP=1 -d postgres -c "CREATE DATABASE $Cible OWNER ssi_app ENCODING 'UTF8' TEMPLATE template0;" | Out-Null
-& $pgrestore --no-owner --role=ssi_app --exit-on-error -d $Cible $Fichier
-if ($LASTEXITCODE -ne 0) { throw "pg_restore a échoué (code $LASTEXITCODE). La base $Cible est incomplète : supprimez-la avant de réessayer." }
+if ($existe) {
+    # Bascule vers une base déjà restaurée par un passage précédent : aucune écriture, les totaux sont recontrôlés ci-dessous.
+    Write-Host "La base $Cible existe : elle n'est pas modifiée, ses totaux sont recontrôlés avant la bascule."
+} else {
+    & $psql -X -q -v ON_ERROR_STOP=1 -d postgres -c "CREATE DATABASE $Cible OWNER ssi_app ENCODING 'UTF8' TEMPLATE template0;" | Out-Null
+    & $pgrestore --no-owner --role=ssi_app --exit-on-error -d $Cible $Fichier
+    if ($LASTEXITCODE -ne 0) { throw "pg_restore a échoué (code $LASTEXITCODE). La base $Cible est incomplète : supprimez-la avant de réessayer." }
+}
 
 if (Test-Path "$Fichier.controles.txt") {
     $attendu = (Get-Content -Raw -Encoding UTF8 "$Fichier.controles.txt").Trim() -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }
     $obtenu = @(& $psql -X -q -A -t -d $Cible -f $controles | Where-Object { $_ })
     if (Compare-Object $attendu $obtenu) { throw "Totaux de contrôle différents de ceux de la sauvegarde : ne basculez pas sur cette base." }
     Write-Host "Totaux de contrôle identiques à ceux de la sauvegarde." -ForegroundColor Green
+} elseif ($Basculer) {
+    throw "Fichier de totaux de contrôle absent : la base restaurée ne peut pas être vérifiée, bascule refusée."
 }
 
 if ($Basculer) {
