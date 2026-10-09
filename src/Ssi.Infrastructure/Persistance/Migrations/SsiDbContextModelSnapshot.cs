@@ -2565,7 +2565,7 @@ namespace Ssi.Infrastructure.Persistance.Migrations
 
                     b.ToTable("mouvements_stock", null, t =>
                         {
-                            t.HasCheckConstraint("ck_mouvement_non_nul", "quantite <> 0");
+                            t.HasCheckConstraint("ck_mouvement_non_nul", "quantite <> 0 OR (type IN (10, 11) AND valeur <> 0)");
                         });
                 });
 

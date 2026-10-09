@@ -9,8 +9,14 @@ namespace Ssi.Application.Finance;
 /// Factures et avoirs clients / fournisseurs (§15-§17, §37). Une facture validée crée une créance ou une dette,
 /// jamais un mouvement de trésorerie (R-21 à R-23). La numérotation définitive est attribuée à la validation.
 /// </summary>
-public class ServiceFactures(ISsiDb db, IHorloge horloge, Audit audit, INumerotation numerotation, Fiscalite fiscalite, Soldes soldes, IUtilisateurCourant courant)
+public class ServiceFactures(ISsiDb db, IHorloge horloge, Audit audit, INumerotation numerotation, Fiscalite fiscalite, Soldes soldes, IUtilisateurCourant courant,
+    Stocks.MoteurStock moteur)
 {
+    /// <summary>Écart de prix d'achat incorporé au stock restant (H-07).</summary>
+    public const string EcartPrixStock = "ECART_PRIX_ACHAT";
+    /// <summary>Part de l'écart de prix afférente aux quantités déjà vendues : coût de la période (H-07).</summary>
+    public const string EcartPrixConsomme = "ECART_PRIX_CONSOMME";
+
     public async Task<FactureDto> FactureAsync(Guid id, CancellationToken ct)
         => (await ListeAsync(new FiltreFactures { Ids = [id] }, ct)).SingleOrDefault() ?? throw new NonTrouveException("Facture introuvable.");
 
@@ -159,7 +165,7 @@ public class ServiceFactures(ISsiDb db, IHorloge horloge, Audit audit, INumerota
                 if (l.Quantite != acceptee && l.Quantite != chargee)
                     msgs.Add($"Ligne {l.Designation} : quantité facturée {l.Quantite:N3} différente de la quantité acceptée ({acceptee:N3}) et chargée ({chargee:N3}).");
                 var pu = lr.First().PrixUnitaireHt;
-                if (l.PrixUnitaireHt != pu) msgs.Add($"Ligne {l.Designation} : prix facturé {l.PrixUnitaireHt:N4} différent du prix de commande ({pu:N4}). Écart de coût à analyser (H-07).");
+                if (l.PrixUnitaireHt != pu) msgs.Add($"Ligne {l.Designation} : prix facturé {l.PrixUnitaireHt:N4} différent du prix de commande ({pu:N4}). À la validation, l'écart sera incorporé au stock ou passé en coût (H-07).");
             }
         }
         foreach (var l in f.Lignes.Where(l => l.LivraisonId.HasValue))
@@ -210,9 +216,44 @@ public class ServiceFactures(ISsiDb db, IHorloge horloge, Audit audit, INumerota
         f.Statut = StatutDocument.Valide;
         f.ValideLe = horloge.Maintenant;
         f.ValidePar = courant.Id;
+        if (f.Sens == SensFacture.Fournisseur && f.Type == TypeFacture.Facture && f.Origine == OrigineFacture.AchatStock)
+            controles.AddRange(await AjusterEcartsPrixAsync(f, ct));
         audit.Enregistrer("VALIDATION_FACTURE", "Facture", f.Id, f.Numero, null, null, new { f.Sens, f.Type, f.TotalHt, f.TotalTtc, f.NumeroTiers });
         await db.SaveChangesAsync(ct);
         return (await FactureAsync(id, ct)) with { Avertissements = controles };
+    }
+
+    /// <summary>
+    /// H-07 : l'entrée en stock est valorisée au prix de commande ; à la validation de la facture fournisseur, l'écart
+    /// (prix facturé − prix de réception) × quantité facturée est incorporé à la valeur du stock (CMP recalculé).
+    /// La part correspondant aux quantités déjà sorties est aussitôt reprise en coût de la période, pour ne pas la reporter sur les ventes futures.
+    /// Approximation documentée : la part restante = min(1, stock actuel de l'emplacement / quantité facturée).
+    /// </summary>
+    private async Task<List<string>> AjusterEcartsPrixAsync(Facture f, CancellationToken ct)
+    {
+        var infos = new List<string>();
+        foreach (var l in f.Lignes.Where(l => l.ReceptionId.HasValue && l.ProduitId.HasValue && l.Quantite > 0))
+        {
+            var lr = await db.LignesReception.AsNoTracking().Where(x => x.ReceptionId == l.ReceptionId && x.ProduitId == l.ProduitId).ToListAsync(ct);
+            var reception = await db.Receptions.AsNoTracking().FirstOrDefaultAsync(r => r.Id == l.ReceptionId, ct);
+            if (lr.Count == 0 || reception?.Statut != StatutDocument.Valide) continue;
+            var puReception = lr[0].PrixUnitaireHt;
+            var ecart = Arrondi.Montant((l.PrixUnitaireHt - puReception) * l.Quantite);
+            if (ecart == 0) continue;
+            var cuveId = lr[0].CuveId;
+            var stock = await moteur.StockAsync(l.ProduitId!.Value, cuveId, null, ct);
+            var partRestante = Arrondi.Montant(ecart * Math.Clamp(stock / l.Quantite, 0m, 1m));
+            var partConsommee = ecart - partRestante;
+            var reference = $"{f.Numero} / {reception.Numero}";
+            // Écrit d'abord l'écart total puis la sortie de la part consommée : la position reste cohérente même si le stock est à zéro.
+            await moteur.EcrireValeurAsync(l.ProduitId.Value, cuveId, ecart, EcartPrixStock, f.Id, reference,
+                $"Écart de prix facture : {l.PrixUnitaireHt:N4} au lieu de {puReception:N4} HT sur {l.Quantite:N3}", ct);
+            if (partConsommee != 0)
+                await moteur.EcrireValeurAsync(l.ProduitId.Value, cuveId, -partConsommee, EcartPrixConsomme, f.Id, reference,
+                    "Part de l'écart de prix afférente aux quantités déjà vendues (coût de la période)", ct);
+            infos.Add($"Écart de prix {l.Designation} : {ecart:N2} DH HT, dont {partRestante:N2} incorporés au stock restant et {partConsommee:N2} en coût de la période (H-07).");
+        }
+        return infos;
     }
 
     public async Task<FactureDto> AnnulerAsync(Guid id, string? motif, CancellationToken ct)
@@ -233,6 +274,12 @@ public class ServiceFactures(ISsiDb db, IHorloge horloge, Audit audit, INumerota
         f.Statut = StatutDocument.Annule;
         f.AnnuleLe = horloge.Maintenant;
         f.MotifAnnulation = m;
+        // Contre-passe les ajustements de valeur de stock nés de cette facture (H-07)
+        if (f.Statut == StatutDocument.Annule)
+            foreach (var mvt in await db.MouvementsStock.Where(x => x.DocumentId == id && x.Type == TypeMouvementStock.AjustementValeur
+                                                                    && !db.MouvementsStock.Any(c => c.Type == TypeMouvementStock.ContrePassation && c.DocumentRef == "Contre-passation mvt " + x.Id))
+                         .OrderByDescending(x => x.Id).ToListAsync(ct))
+                await moteur.ContrePasserAsync(mvt, $"Annulation de la facture {f.Numero} : {m}", ct);
         // Libère les bons de crédit regroupés par une facture récapitulative
         foreach (var bon in await db.ReglementsPoste.Where(r => r.FactureId == id).ToListAsync(ct)) bon.FactureId = null;
         audit.Enregistrer("ANNULATION_FACTURE", "Facture", f.Id, f.Numero, m, avant, new { Statut = "Annule" });

@@ -80,6 +80,34 @@ public class MoteurStock(ISsiDb db, IUtilisateurCourant utilisateur, IHorloge ho
         return mvt;
     }
 
+    /// <summary>
+    /// Mouvement de valeur seule (quantité nulle) : écart de prix d'achat constaté sur facture (H-07).
+    /// La valeur s'ajoute à la position et le CMP est recalculé ; doit être appelé dans une transaction.
+    /// </summary>
+    public async Task<MouvementStock> EcrireValeurAsync(Guid produitId, Guid? cuveId, decimal valeur, string documentType, Guid? documentId,
+        string? documentRef, string motif, CancellationToken ct)
+    {
+        if (valeur == 0) throw new RegleMetierException("Un ajustement de valeur ne peut pas être nul.");
+        var position = await VerrouillerPositionAsync(produitId, cuveId, ct);
+        var nouvelleValeur = position.Valeur + valeur;
+        var cmp = position.Quantite > 0 ? Arrondi.CoutUnitaire(nouvelleValeur / position.Quantite) : position.Cmp;
+        if (cmp < 0) throw new RegleMetierException("L'ajustement de valeur rendrait le coût moyen négatif.");
+        var maintenant = horloge.Maintenant;
+        var mvt = new MouvementStock
+        {
+            Horodatage = maintenant, ProduitId = produitId, CuveId = cuveId, Type = TypeMouvementStock.AjustementValeur, Quantite = 0,
+            CoutUnitaire = 0, Valeur = valeur, QuantiteApres = position.Quantite, CmpApres = cmp, DocumentType = documentType,
+            DocumentId = documentId, DocumentRef = documentRef, Motif = motif, CreePar = utilisateur.Id, CreeLe = maintenant
+        };
+        db.MouvementsStock.Add(mvt);
+        await db.SaveChangesAsync(ct);
+        position.Valeur = nouvelleValeur;
+        position.Cmp = cmp;
+        position.DernierMouvementId = mvt.Id;
+        await db.SaveChangesAsync(ct);
+        return mvt;
+    }
+
     /// <summary>Contre-passe un mouvement existant (correction traçable) au coût d'origine.</summary>
     public async Task<MouvementStock> ContrePasserAsync(MouvementStock origine, string motif, CancellationToken ct)
     {

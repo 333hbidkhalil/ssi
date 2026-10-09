@@ -12,8 +12,8 @@ using Ssi.Infrastructure.Persistance;
 namespace Ssi.Infrastructure.Persistance.Migrations
 {
     [DbContext(typeof(SsiDbContext))]
-    [Migration("20261009094042_Initiale")]
-    partial class Initiale
+    [Migration("20261009142059_IntegriteMetier")]
+    partial class IntegriteMetier
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2568,7 +2568,7 @@ namespace Ssi.Infrastructure.Persistance.Migrations
 
                     b.ToTable("mouvements_stock", null, t =>
                         {
-                            t.HasCheckConstraint("ck_mouvement_non_nul", "quantite <> 0");
+                            t.HasCheckConstraint("ck_mouvement_non_nul", "quantite <> 0 OR (type IN (10, 11) AND valeur <> 0)");
                         });
                 });
 

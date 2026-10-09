@@ -260,7 +260,8 @@ public class SsiDbContext(DbContextOptions<SsiDbContext> options) : DbContext(op
             e.HasOne<Cuve>().WithMany().HasForeignKey(x => x.CuveId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => new { x.ProduitId, x.CuveId, x.Horodatage });
             e.HasIndex(x => new { x.DocumentType, x.DocumentId });
-            e.ToTable(t => t.HasCheckConstraint("ck_mouvement_non_nul", "quantite <> 0"));
+            // Quantité non nulle, sauf ajustement de valeur (H-07) et sa contre-passation, qui portent une valeur non nulle.
+            e.ToTable(t => t.HasCheckConstraint("ck_mouvement_non_nul", "quantite <> 0 OR (type IN (10, 11) AND valeur <> 0)"));
         });
         b.Entity<PositionStock>(e =>
         {

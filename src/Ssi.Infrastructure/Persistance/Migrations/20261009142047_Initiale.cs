@@ -1657,7 +1657,7 @@ namespace Ssi.Infrastructure.Persistance.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_mouvements_stock", x => x.id);
-                    table.CheckConstraint("ck_mouvement_non_nul", "quantite <> 0");
+                    table.CheckConstraint("ck_mouvement_non_nul", "quantite <> 0 OR (type IN (10, 11) AND valeur <> 0)");
                     table.ForeignKey(
                         name: "fk_mouvements_stock_cuves_cuve_id",
                         column: x => x.cuve_id,

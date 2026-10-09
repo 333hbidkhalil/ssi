@@ -192,7 +192,10 @@ public class ServiceRentabilite(ISsiDb db, IHorloge horloge, IUtilisateurCourant
         Affecter("Frais bancaires et commissions", "Banque", null, cleCa, -financiers.Where(m => NatureEffective(m) == NatureMouvementFinancier.FraisBancaires).Sum(m => m.Montant), false);
         Affecter("Écarts de caisse (net)", "Caisse", null, cleCa, -financiers.Where(m => NatureEffective(m) == NatureMouvementFinancier.EcartCaisse).Sum(m => m.Montant), false);
         var ajustements = await db.MouvementsStock.AsNoTracking()
-            .Where(m => m.Horodatage >= debut && m.Horodatage < fin && (m.Type == TypeMouvementStock.Ajustement || m.Type == TypeMouvementStock.AjustementValeur))
+            // Pertes et régularisations de quantité, et part « consommée » des écarts de prix d'achat (H-07) ainsi que leurs contre-passations.
+            // L'écart incorporé au stock restant n'est pas un coût de la période : il passera dans le coût des ventes au CMP.
+            .Where(m => m.Horodatage >= debut && m.Horodatage < fin && (m.Type == TypeMouvementStock.Ajustement
+                        || (m.Type == TypeMouvementStock.AjustementValeur || m.Type == TypeMouvementStock.ContrePassation) && m.DocumentType == Finance.ServiceFactures.EcartPrixConsomme))
             .GroupBy(m => m.ProduitId).Select(g => new { g.Key, V = g.Sum(m => m.Valeur) }).ToListAsync(ct);
         foreach (var aj in ajustements) Affecter("Ajustements de stock (pertes et régularisations)", "Stock", ActiviteProduit(aj.Key, false), null, -aj.V, false);
 
