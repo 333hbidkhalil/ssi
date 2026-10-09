@@ -11,6 +11,12 @@ public class HorlogeCasablanca : IHorloge
     public virtual DateTimeOffset Maintenant => DateTimeOffset.UtcNow;
     public DateOnly Aujourdhui => JourneeDe(Maintenant);
     public DateOnly JourneeDe(DateTimeOffset instant) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(instant, Fuseau).DateTime);
+
+    public DateTimeOffset DebutJournee(DateOnly jour)
+    {
+        var local = jour.ToDateTime(TimeOnly.MinValue);
+        return new DateTimeOffset(local, Fuseau.GetUtcOffset(local)).ToUniversalTime();
+    }
 }
 
 public class Numerotation(SsiDbContext db, IHorloge horloge) : INumerotation

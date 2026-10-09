@@ -103,6 +103,8 @@ public interface IHorloge
     DateTimeOffset Maintenant { get; }
     DateOnly Aujourdhui { get; }
     DateOnly JourneeDe(DateTimeOffset instant);
+    /// <summary>Instant de début (00:00 heure de Casablanca) d'une journée.</summary>
+    DateTimeOffset DebutJournee(DateOnly jour);
 }
 
 public interface INumerotation

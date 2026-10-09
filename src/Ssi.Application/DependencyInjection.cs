@@ -4,6 +4,7 @@ using Ssi.Application.Charges;
 using Ssi.Application.Tiers;
 using Ssi.Application.Ventes;
 using Ssi.Application.Commun;
+using Ssi.Application.Pilotage;
 using Ssi.Application.Finance;
 using Ssi.Application.Referentiels;
 using Ssi.Application.Securite;
@@ -38,6 +39,9 @@ public static class DependencyInjection
         s.AddScoped<ServiceVentes>();
         s.AddScoped<ServiceTresorerie>();
         s.AddScoped<ServiceCharges>();
+        s.AddScoped<ServiceRentabilite>();
+        s.AddScoped<ServicePilotage>();
+        s.AddScoped<ServiceRapports>();
         return s;
     }
 }

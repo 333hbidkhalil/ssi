@@ -20,8 +20,8 @@ public class ServiceVentes(ISsiDb db, IHorloge horloge, Audit audit, IUtilisateu
     public async Task<Page<VenteDto>> VentesAsync(DateOnly? du, DateOnly? au, Guid? clientId, int page, int taille, CancellationToken ct)
     {
         taille = Math.Clamp(taille, 1, 200);
-        var debut = du.HasValue ? new DateTimeOffset(du.Value.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).AddHours(-2) : (DateTimeOffset?)null;
-        var fin = au.HasValue ? new DateTimeOffset(au.Value.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).AddHours(2) : (DateTimeOffset?)null;
+        var debut = du.HasValue ? horloge.DebutJournee(du.Value) : (DateTimeOffset?)null;
+        var fin = au.HasValue ? horloge.DebutJournee(au.Value.AddDays(1)) : (DateTimeOffset?)null;
         var q = db.VentesArticles.AsNoTracking().Where(v => (debut == null || v.Horodatage >= debut) && (fin == null || v.Horodatage < fin) && (clientId == null || v.ClientId == clientId));
         var total = await q.CountAsync(ct);
         var ids = await q.OrderByDescending(v => v.Horodatage).Skip((Math.Max(page, 1) - 1) * taille).Take(taille).Select(v => v.Id).ToListAsync(ct);
