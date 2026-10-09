@@ -33,3 +33,17 @@ Les scénarios s'exécutent via l'API sur une base PostgreSQL réelle créée pa
 | 20 | Exports conformes | Export CSV des ventes avec filtre produit | lignes et total = rapport affiché avec le même filtre | R-40 |
 
 Les tests unitaires des règles (`tests/Ssi.Domain.Tests`) reprennent chaque exemple chiffré de `04-regles-calcul.md`.
+
+## Correspondance avec les tests automatisés (état au 09/10/2026)
+
+`dotnet test` exécute **55 tests, tous verts** : 27 tests unitaires des règles de calcul (`tests/Ssi.Domain.Tests`) et 28 tests d'intégration sur PostgreSQL 16 réel (`tests/Ssi.IntegrationTests`, une base créée par migration pour chaque classe de tests).
+
+| Classe | Tests |
+|---|---|
+| `ScenariosStation` | Scénarios 1, 2, 3, 15 ; contrôles d'index (fin inférieure refusée, continuité, avertissements à confirmer) ; scénario 19 côté station (le pompiste ne peut ni modifier un prix ni administrer) |
+| `ScenariosExploitation` | Scénarios 4, 5, 6, 6 bis (marge vrac insuffisante sans dérogation), 7-9-10-14, 8, 11, 12, 13 ; ventes d'articles ; charges ; H-07 (écart de prix facture fournisseur réparti entre stock restant et coût) |
+| `ScenariosPilotage` | Scénarios 10, 16, 17, 19, 20 ; facture client PDF |
+| `ScenarioSauvegarde` | Scénario 18 : sauvegarde vérifiée (instantané, restauration de contrôle, 21 totaux) puis restauration identique |
+| `ContratClientWpf` | Chaque lecture des 12 écrans Windows (même URL, mêmes filtres, même type) ; menu selon les permissions ; parcours caisse avec les corps de requête du client |
+
+Le client WPF est compilé sous Linux mais ne peut pas y être exécuté : sa recette visuelle se fait sur Windows. `ContratClientWpf` garantit en attendant que chaque écran lit des données réelles de l'API.
