@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Ssi.Api/Ssi.Api.csproj" />
+    <Project Path="src/Ssi.Application/Ssi.Application.csproj" />
+    <Project Path="src/Ssi.Client.Wpf/Ssi.Client.Wpf.csproj" />
+    <Project Path="src/Ssi.Contracts/Ssi.Contracts.csproj" />
+    <Project Path="src/Ssi.Domain/Ssi.Domain.csproj" />
+    <Project Path="src/Ssi.Infrastructure/Ssi.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Ssi.Domain.Tests/Ssi.Domain.Tests.csproj" />
+    <Project Path="tests/Ssi.IntegrationTests/Ssi.IntegrationTests.csproj" />
+  </Folder>
+</Solution>

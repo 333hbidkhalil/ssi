@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Company>SSI</Company>
+    <Product>Station Service Intelligence</Product>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+</Project>
