@@ -24,8 +24,8 @@ Rentabilité par activité (station gasoil et sans plomb, vrac, lubrifiants, aut
 
 ## Phase 6 — Validation : en cours
 
-* Fait : 55 tests automatisés verts, dont la concurrence (validation simultanée), les permissions, l'idempotence, la sauvegarde et la restauration.
-* Fait : client Windows WPF à 12 écrans (connexion, menu selon les droits, postes et relevés, caisse, ventes d'articles, stocks et jaugeages, vrac, clients et fournisseurs, factures et règlements, trésorerie et charges, rentabilité et simulation, rapports et exports, administration). Il compile et chaque lecture d'écran est testée contre l'API (`ContratClientWpf`), ce qui a déjà permis de corriger deux défauts (validation de caisse sans motif, détail des erreurs de saisie).
+* Fait : 57 tests automatisés verts, dont la concurrence (validation simultanée), les permissions, l'idempotence, la sauvegarde et la restauration.
+* Fait : client Windows WPF à 15 écrans (connexion, menu selon les droits, postes et relevés, caisse, ventes d'articles, stocks et jaugeages, achats et réceptions, vrac, clients et fournisseurs, factures, avoirs et règlements, trésorerie et charges, personnel, rentabilité et simulation, rapports et exports, paramétrage de la station, administration). Toutes les opérations de l'API ont désormais un écran. Il compile et chaque lecture d'écran est testée contre l'API (`ContratClientWpf`), ce qui a déjà permis de corriger deux défauts (validation de caisse sans motif, détail des erreurs de saisie).
 * Reste : recette visuelle du client sur Windows ; essai de charge à 8 postes simultanés.
 
 ## Phase 7 — Livraison : préparée
@@ -35,6 +35,6 @@ Rentabilité par activité (station gasoil et sans plomb, vrac, lubrifiants, aut
 
 ## Limites connues
 
-* Écrans non encore réalisés dans le client (l'API et ses tests existent) : paramétrage des équipements et du catalogue, achats et réceptions, saisie libre de factures et avoirs, personnel. Ces opérations se font aujourd'hui par l'API ; elles sont la prochaine étape du client.
+* Le client n'a pas encore été essayé sur un poste Windows : son comportement visuel (mise en page, navigation au clavier) reste à recetter.
 * SSI est un outil de gestion. Il n'est pas un logiciel de comptabilité certifié et ne remplace pas la tenue comptable légale.
 * Les taux de TVA initiaux sont à valider par le comptable (H-03) avant toute mise en production.

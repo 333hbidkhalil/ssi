@@ -60,7 +60,7 @@ public sealed record ChargeDto(Guid Id, string Numero, DateOnly Date, Guid? Four
 public sealed record EmployeDto(Guid Id, string Matricule, string Nom, string Prenom, string? Cin, string Fonction, DateOnly DateEmbauche,
     string? Affectation, decimal? SalaireBase, string? Telephone, bool Actif);
 public sealed record EnregistrementEmployeDto(string Matricule, string Nom, string Prenom, string? Cin, string Fonction, DateOnly DateEmbauche,
-    string? Affectation, decimal SalaireBase, string? Telephone, bool Actif);
+    string? Affectation, decimal? SalaireBase, string? Telephone, bool Actif);   // SalaireBase null = inchangé (utilisateur sans accès aux salaires)
 public sealed record ElementRemunerationDto(Guid Id, Guid EmployeId, string Employe, DateOnly Periode, TypeElementRemuneration Type, decimal? Montant, string? Commentaire);
 public sealed record SaisieElementRemunerationDto(Guid EmployeId, DateOnly Periode, TypeElementRemuneration Type, decimal Montant, string? Commentaire);
 public sealed record AbsenceDto(Guid Id, Guid EmployeId, DateOnly Debut, DateOnly Fin, string Type, bool Justifiee);

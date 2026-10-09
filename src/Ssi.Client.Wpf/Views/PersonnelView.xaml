@@ -1,0 +1,97 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.PersonnelView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="420"/></Grid.ColumnDefinitions>
+        <DockPanel Margin="0,0,12,0">
+            <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                <Button Content="Nouvel employé" Command="{Binding NouveauCommand}" Visibility="{Binding PeutCreer, Converter={StaticResource Visible}}"/>
+                <TextBlock Text="Mois" Style="{StaticResource Etiquette}"/>
+                <DatePicker SelectedDate="{Binding Mois}"/>
+                <Button Content="Afficher" Command="{Binding ChangerPeriodeCommand}"/>
+                <TextBlock VerticalAlignment="Center">
+                    Effectif <Run Text="{Binding Masse.Effectif, Mode=OneWay}"/> · masse salariale <Run Text="{Binding Masse.Total, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/>
+                </TextBlock>
+            </WrapPanel>
+            <DataGrid DockPanel.Dock="Bottom" ItemsSource="{Binding Elements}" MaxHeight="200" Margin="0,8,0,0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Employé" Binding="{Binding Employe}" Width="*"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110"/>
+                    <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
+                    <DataGridTextColumn Header="Commentaire" Binding="{Binding Commentaire}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <DataGrid ItemsSource="{Binding Employes}" SelectedItem="{Binding Employe}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Matricule" Binding="{Binding Matricule}" Width="85"/>
+                    <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
+                    <DataGridTextColumn Header="Prénom" Binding="{Binding Prenom}" Width="*"/>
+                    <DataGridTextColumn Header="Fonction" Binding="{Binding Fonction}" Width="110"/>
+                    <DataGridTextColumn Header="Affectation" Binding="{Binding Affectation}" Width="100"/>
+                    <DataGridTextColumn Header="Salaire de base" Binding="{Binding SalaireBase, StringFormat=N2}" Width="110"/>
+                    <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}" Width="50"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <Border Style="{StaticResource Carte}" IsEnabled="{Binding PeutModifier}">
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                        <Grid.Resources>
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}"><Setter Property="Margin" Value="0,0,0,6"/></Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource Etiquette}"/>
+                        </Grid.Resources>
+                        <TextBlock Text="Matricule"/><TextBox Grid.Column="1" Text="{Binding Matricule}"/>
+                        <TextBlock Grid.Row="1" Text="Nom"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Nom}"/>
+                        <TextBlock Grid.Row="2" Text="Prénom"/><TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Prenom}"/>
+                        <TextBlock Grid.Row="3" Text="CIN"/><TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Cin}"/>
+                        <TextBlock Grid.Row="4" Text="Fonction"/><TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Fonction}"/>
+                        <TextBlock Grid.Row="5" Text="Affectation"/><TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Affectation}"/>
+                        <TextBlock Grid.Row="6" Text="Embauche"/><DatePicker Grid.Row="6" Grid.Column="1" SelectedDate="{Binding DateEmbauche}" Margin="0,0,0,6"/>
+                        <TextBlock Grid.Row="7" Text="Téléphone"/><TextBox Grid.Row="7" Grid.Column="1" Text="{Binding Telephone}"/>
+                        <TextBlock Grid.Row="8" Text="Salaire de base" Visibility="{Binding VoitSalaires, Converter={StaticResource Visible}}"/>
+                        <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding Salaire}" Visibility="{Binding VoitSalaires, Converter={StaticResource Visible}}"/>
+                        <StackPanel Grid.Row="9" Grid.ColumnSpan="2" Orientation="Horizontal">
+                            <CheckBox Content="Actif" IsChecked="{Binding Actif}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <Button Content="Enregistrer" Style="{StaticResource Principal}" Command="{Binding EnregistrerCommand}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Style="{StaticResource Carte}" IsEnabled="{Binding PeutModifier}" Visibility="{Binding EmployeId, Converter={StaticResource SiTexte}}">
+                    <StackPanel>
+                        <TextBlock Text="Absences" FontWeight="SemiBold"/>
+                        <WrapPanel Margin="0,4">
+                            <DatePicker SelectedDate="{Binding DebutAbsence}"/>
+                            <DatePicker SelectedDate="{Binding FinAbsence}"/>
+                            <TextBox Text="{Binding TypeAbsence}" Width="80"/>
+                            <CheckBox Content="Justifiée" IsChecked="{Binding Justifiee}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Button Content="Ajouter" Command="{Binding AjouterAbsenceCommand}" MinWidth="0"/>
+                        </WrapPanel>
+                        <DataGrid ItemsSource="{Binding Absences}" MaxHeight="150">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Du" Binding="{Binding Debut, StringFormat=dd/MM/yy}" Width="75"/>
+                                <DataGridTextColumn Header="Au" Binding="{Binding Fin, StringFormat=dd/MM/yy}" Width="75"/>
+                                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
+                                <DataGridCheckBoxColumn Header="Justifiée" Binding="{Binding Justifiee}" Width="65"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Carte}" Visibility="{Binding VoitSalaires, Converter={StaticResource Visible}}">
+                    <StackPanel>
+                        <TextBlock Text="Élément de rémunération du mois (employé sélectionné)" FontWeight="SemiBold"/>
+                        <WrapPanel Margin="0,4">
+                            <ComboBox ItemsSource="{Binding TypesElement}" SelectedItem="{Binding TypeElement}" MinWidth="110"/>
+                            <TextBox Text="{Binding MontantElement, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                            <TextBox Text="{Binding CommentaireElement}" Width="120" ToolTip="Commentaire"/>
+                            <Button Content="Ajouter" Command="{Binding AjouterElementCommand}" MinWidth="0"/>
+                        </WrapPanel>
+                        <TextBlock Text="Suivi de gestion : SSI ne calcule ni la paie légale ni les déclarations CNSS." Foreground="#8C959F" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

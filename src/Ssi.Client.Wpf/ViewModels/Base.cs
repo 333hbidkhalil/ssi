@@ -22,7 +22,10 @@ public static class Droits
         ReglementsAnnuler = "reglements.annuler", BanqueCreer = "banque.creer", BanqueRapprocher = "banque.rapprocher", ClientsCreer = "clients.creer",
         ClientsModifier = "clients.modifier", FournisseursCreer = "fournisseurs.creer", FournisseursModifier = "fournisseurs.modifier",
         RentabiliteSimuler = "rentabilite.simuler", AdminRoles = "admin.roles", CatalogueConsulter = "catalogue.consulter", PrixValider = "prix.valider",
-        PersonnelConsulter = "personnel.consulter";
+        PersonnelConsulter = "personnel.consulter", PersonnelCreer = "personnel.creer", PersonnelModifier = "personnel.modifier",
+        PersonnelSensible = "personnel.sensible", AchatsConsulter = "achats.consulter", AchatsCreer = "achats.creer", AchatsValider = "achats.valider",
+        AchatsAnnuler = "achats.annuler", CatalogueCreer = "catalogue.creer", CatalogueModifier = "catalogue.modifier", PrixConsulter = "prix.consulter",
+        StationParametrer = "station.parametrer";
 }
 
 public abstract partial class ViewModelBase : ObservableObject

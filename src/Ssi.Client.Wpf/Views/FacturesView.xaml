@@ -27,7 +27,7 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="200"/>
+                <RowDefinition Height="250"/>
             </Grid.RowDefinitions>
             <DataGrid ItemsSource="{Binding Factures}" SelectedItem="{Binding FactureSelectionnee}" Margin="0,0,12,0">
                 <DataGrid.Columns>
@@ -96,7 +96,9 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0">
+            <TabControl Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0">
+            <TabItem Header="Règlements de la période">
+            <DockPanel Margin="4">
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
                     <Button DockPanel.Dock="Right" Content="Annuler le règlement…" Command="{Binding AnnulerReglementCommand}" IsEnabled="{Binding PeutAnnulerReglement}" Margin="0"/>
                     <TextBlock Text="Règlements de la période" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -115,6 +117,57 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>
+            </TabItem>
+            <TabItem Header="Saisir une facture ou un avoir" Visibility="{Binding PeutCreer, Converter={StaticResource Visible}}">
+                <DockPanel Margin="4">
+                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+                        <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding TypeSaisie}" MinWidth="90"/>
+                        <ComboBox ItemsSource="{Binding Origines}" SelectedItem="{Binding OrigineSaisie}" MinWidth="110"/>
+                        <ComboBox ItemsSource="{Binding ClientsSaisie}" SelectedItem="{Binding ClientSaisie}" DisplayMemberPath="Nom" MinWidth="170"
+                                  Visibility="{Binding SaisieClient, Converter={StaticResource Visible}}"/>
+                        <ComboBox ItemsSource="{Binding Fournisseurs}" SelectedItem="{Binding FournisseurSaisie}" DisplayMemberPath="Nom" MinWidth="170"
+                                  Visibility="{Binding SaisieClient, Converter={StaticResource Invisible}}"/>
+                        <TextBlock Text="N° du tiers" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding NumeroTiers}" Width="100"/>
+                        <DatePicker SelectedDate="{Binding DateSaisie}"/>
+                        <TextBlock Text="Échéance" Style="{StaticResource Etiquette}"/>
+                        <DatePicker SelectedDate="{Binding EcheanceSaisie}"/>
+                        <TextBox Text="{Binding CommentaireSaisie}" Width="160" ToolTip="Commentaire"/>
+                        <TextBlock Text="{Binding FactureOrigine.Numero, StringFormat=Avoir sur {0}}" Foreground="{StaticResource Primaire}" VerticalAlignment="Center"/>
+                    </WrapPanel>
+                    <StackPanel DockPanel.Dock="Right" Margin="8,0,0,0">
+                        <Button Content="Ajouter une ligne" Command="{Binding AjouterLigneSaisieCommand}" Margin="0,0,0,4"/>
+                        <Button Content="Avoir sur la facture sélectionnée" Command="{Binding PreparerAvoirCommand}" Margin="0,0,0,4"/>
+                        <Button Content="Enregistrer (brouillon)" Style="{StaticResource Principal}" Command="{Binding EnregistrerSaisieCommand}" Margin="0,0,0,4"/>
+                        <Button Content="Effacer" Command="{Binding AnnulerSaisieCommand}"/>
+                    </StackPanel>
+                    <DataGrid ItemsSource="{Binding LignesSaisie}" IsReadOnly="False">
+                        <DataGrid.Columns>
+                            <DataGridComboBoxColumn Header="Produit (facultatif)" SelectedItemBinding="{Binding Produit}" DisplayMemberPath="Designation" Width="170">
+                                <DataGridComboBoxColumn.ElementStyle>
+                                    <Style TargetType="ComboBox"><Setter Property="ItemsSource" Value="{Binding DataContext.Produits, RelativeSource={RelativeSource AncestorType=UserControl}}"/></Style>
+                                </DataGridComboBoxColumn.ElementStyle>
+                                <DataGridComboBoxColumn.EditingElementStyle>
+                                    <Style TargetType="ComboBox"><Setter Property="ItemsSource" Value="{Binding DataContext.Produits, RelativeSource={RelativeSource AncestorType=UserControl}}"/></Style>
+                                </DataGridComboBoxColumn.EditingElementStyle>
+                            </DataGridComboBoxColumn>
+                            <DataGridTextColumn Header="Désignation" Binding="{Binding Designation, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                            <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+                            <DataGridTextColumn Header="Prix HT" Binding="{Binding PrixUnitaireHt, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                            <DataGridTextColumn Header="TVA % (vide = taux du produit)" Binding="{Binding TauxTvaPct, UpdateSourceTrigger=PropertyChanged}" Width="190"/>
+                            <DataGridTemplateColumn Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="Retirer" MinWidth="0" Padding="6,1" Margin="0"
+                                                Command="{Binding DataContext.RetirerLigneSaisieCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+            </TabControl>
         </Grid>
     </DockPanel>
 </UserControl>

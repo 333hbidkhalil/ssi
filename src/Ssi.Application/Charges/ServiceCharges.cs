@@ -105,20 +105,22 @@ public class ServiceCharges(ISsiDb db, IHorloge horloge, Audit audit, IUtilisate
         Garde.Requis(dto.Matricule, "matricule");
         Garde.Requis(dto.Nom, "nom");
         Garde.Requis(dto.Fonction, "fonction");
-        Garde.PositifOuNul(dto.SalaireBase, "salaireBase");
         Employe e;
         if (id is null) { e = new Employe(); db.Employes.Add(e); }
         else e = Garde.Trouve(await db.Employes.FindAsync([id.Value], ct), "Employé");
+        // Salaire non transmis : inchangé (fiche modifiée par un utilisateur qui ne voit pas les salaires).
+        var salaire = dto.SalaireBase ?? (id is null ? 0m : e.SalaireBase);
+        Garde.PositifOuNul(salaire, "salaireBase");
         if (e.Fonction != dto.Fonction || e.Affectation != dto.Affectation)
             db.AffectationsEmploye.Add(new AffectationEmploye { EmployeId = e.Id, Fonction = dto.Fonction, Affectation = dto.Affectation, Debut = horloge.Aujourdhui });
-        if (id is not null && e.SalaireBase != dto.SalaireBase)
+        if (id is not null && e.SalaireBase != salaire)
         {
             if (!Sensible) throw new AccesRefuseException("La modification du salaire nécessite la permission personnel.sensible.");
-            audit.Enregistrer("MODIFICATION_SALAIRE", "Employe", e.Id, e.Matricule, null, new { Ancien = e.SalaireBase }, new { Nouveau = dto.SalaireBase });
+            audit.Enregistrer("MODIFICATION_SALAIRE", "Employe", e.Id, e.Matricule, null, new { Ancien = e.SalaireBase }, new { Nouveau = salaire });
         }
-        else if (id is null && dto.SalaireBase > 0 && !Sensible) throw new AccesRefuseException("La saisie du salaire nécessite la permission personnel.sensible.");
+        else if (id is null && salaire > 0 && !Sensible) throw new AccesRefuseException("La saisie du salaire nécessite la permission personnel.sensible.");
         e.Matricule = dto.Matricule.Trim(); e.Nom = dto.Nom; e.Prenom = dto.Prenom; e.Cin = dto.Cin; e.Fonction = dto.Fonction; e.DateEmbauche = dto.DateEmbauche;
-        e.Affectation = dto.Affectation; e.SalaireBase = dto.SalaireBase; e.Telephone = dto.Telephone; e.Actif = dto.Actif;
+        e.Affectation = dto.Affectation; e.SalaireBase = salaire; e.Telephone = dto.Telephone; e.Actif = dto.Actif;
         await db.SaveChangesAsync(ct);
         return (await EmployesAsync(null, ct)).First(x => x.Id == e.Id);
     }

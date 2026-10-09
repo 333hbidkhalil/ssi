@@ -93,6 +93,9 @@
             <DataTemplate DataType="{x:Type vm:RentabiliteViewModel}"><v:RentabiliteView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:RapportsViewModel}"><v:RapportsView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:AdministrationViewModel}"><v:AdministrationView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:AchatsViewModel}"><v:AchatsView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ParametrageViewModel}"><v:ParametrageView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:PersonnelViewModel}"><v:PersonnelView/></DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

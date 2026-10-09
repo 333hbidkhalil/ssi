@@ -1,0 +1,200 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.ParametrageView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="Champ" TargetType="TextBlock" BasedOn="{StaticResource Etiquette}">
+            <Setter Property="Margin" Value="0,6,0,2"/>
+        </Style>
+    </UserControl.Resources>
+    <TabControl>
+        <TabItem Header="Produits et prix">
+            <Grid Margin="8">
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="420"/></Grid.ColumnDefinitions>
+                <DockPanel Margin="0,0,12,0">
+                    <Button DockPanel.Dock="Top" Content="Nouveau produit" Command="{Binding NouveauProduitCommand}" HorizontalAlignment="Left" Margin="0,0,0,6"
+                            Visibility="{Binding PeutCatalogue, Converter={StaticResource Visible}}"/>
+                    <DataGrid ItemsSource="{Binding Produits}" SelectedItem="{Binding Produit}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="90"/>
+                            <DataGridTextColumn Header="Désignation" Binding="{Binding Designation}" Width="*"/>
+                            <DataGridTextColumn Header="Famille" Binding="{Binding Famille}" Width="110"/>
+                            <DataGridTextColumn Header="Taxe" Binding="{Binding Taxe}" Width="80"/>
+                            <DataGridTextColumn Header="Prix TTC" Binding="{Binding PrixVenteTtc, StringFormat=N2}" Width="80"/>
+                            <DataGridTextColumn Header="Achat HT réf." Binding="{Binding PrixAchatReferenceHt, StringFormat=N4}" Width="95"/>
+                            <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}" Width="50"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <Border Style="{StaticResource Carte}" IsEnabled="{Binding PeutCatalogue}">
+                            <StackPanel>
+                                <TextBlock Text="Code" Style="{StaticResource Champ}"/><TextBox Text="{Binding CodeProduit}"/>
+                                <TextBlock Text="Désignation" Style="{StaticResource Champ}"/><TextBox Text="{Binding Designation}"/>
+                                <TextBlock Text="Famille" Style="{StaticResource Champ}"/><ComboBox ItemsSource="{Binding Familles}" SelectedItem="{Binding Famille}" DisplayMemberPath="Libelle"/>
+                                <TextBlock Text="Taxe (taux datés dans Administration)" Style="{StaticResource Champ}"/><ComboBox ItemsSource="{Binding Taxes}" SelectedItem="{Binding Taxe}" DisplayMemberPath="Libelle"/>
+                                <TextBlock Text="Type de carburant (carburants uniquement)" Style="{StaticResource Champ}"/><ComboBox ItemsSource="{Binding TypesCarburant}" SelectedItem="{Binding TypeCarburant}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                    <TextBlock Text="Unité" Style="{StaticResource Etiquette}"/><TextBox Text="{Binding Unite}" Width="50"/>
+                                    <TextBlock Text="Seuil d'alerte" Style="{StaticResource Etiquette}"/><TextBox Text="{Binding SeuilAlerte}" Width="70"/>
+                                    <CheckBox Content="Actif" IsChecked="{Binding ProduitActif}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                    <TextBlock Text="Marque" Style="{StaticResource Etiquette}"/><TextBox Text="{Binding Marque}" Width="100"/>
+                                    <TextBlock Text="Conditionnement" Style="{StaticResource Etiquette}"/><TextBox Text="{Binding Conditionnement}" Width="80"/>
+                                </StackPanel>
+                                <Button Content="Enregistrer le produit" Style="{StaticResource Principal}" Command="{Binding EnregistrerProduitCommand}" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Carte}" IsEnabled="{Binding PeutPrix}" Visibility="{Binding ProduitId, Converter={StaticResource SiTexte}}">
+                            <StackPanel>
+                                <TextBlock Text="Nouveau prix daté" FontWeight="SemiBold"/>
+                                <WrapPanel Margin="0,6,0,0">
+                                    <TextBox Text="{Binding NouveauPrix, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+                                    <DatePicker SelectedDate="{Binding DebutPrix}"/>
+                                    <TextBox Text="{Binding HeureDebutPrix}" Width="55" ToolTip="Heure (hh:mm)"/>
+                                </WrapPanel>
+                                <CheckBox Content="Prix d'achat de référence HT (sinon prix de vente TTC)" IsChecked="{Binding PrixAchatReference}" Margin="0,6"/>
+                                <Button Content="Enregistrer le prix…" Command="{Binding EnregistrerPrixCommand}" HorizontalAlignment="Left"/>
+                                <DataGrid ItemsSource="{Binding HistoriquePrix}" MaxHeight="200" Margin="0,8,0,0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="80"/>
+                                        <DataGridTextColumn Header="Prix" Binding="{Binding Prix, StringFormat=N4}" Width="75"/>
+                                        <DataGridTextColumn Header="Début" Binding="{Binding Debut, StringFormat=dd/MM/yy HH:mm}" Width="100"/>
+                                        <DataGridTextColumn Header="Fin" Binding="{Binding Fin, StringFormat=dd/MM/yy HH:mm}" Width="100"/>
+                                        <DataGridTextColumn Header="Par" Binding="{Binding ValidePar}" Width="*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="Cuves">
+            <Grid Margin="8">
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="360"/></Grid.ColumnDefinitions>
+                <DataGrid ItemsSource="{Binding Cuves}" SelectedItem="{Binding Cuve}" Margin="0,0,12,0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="90"/>
+                        <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="*"/>
+                        <DataGridTextColumn Header="Capacité (L)" Binding="{Binding Capacite, StringFormat=N0}" Width="100"/>
+                        <DataGridTextColumn Header="Seuil (L)" Binding="{Binding SeuilMinimal, StringFormat=N0}" Width="80"/>
+                        <DataGridTextColumn Header="Tolérance L / %" Binding="{Binding ToleranceEcartLitres, StringFormat=N0}" Width="100"/>
+                        <DataGridCheckBoxColumn Header="Active" Binding="{Binding Actif}" Width="55"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Border Grid.Column="1" Style="{StaticResource Carte}" IsEnabled="{Binding PeutEquipements}" VerticalAlignment="Top">
+                    <StackPanel>
+                        <Button Content="Nouvelle cuve" Command="{Binding NouvelleCuveCommand}" HorizontalAlignment="Left"/>
+                        <TextBlock Text="Code" Style="{StaticResource Champ}"/><TextBox Text="{Binding CodeCuve}"/>
+                        <TextBlock Text="Carburant" Style="{StaticResource Champ}"/><ComboBox ItemsSource="{Binding Carburants}" SelectedItem="{Binding ProduitCuve}" DisplayMemberPath="Designation"/>
+                        <TextBlock Text="Capacité (L)" Style="{StaticResource Champ}"/><TextBox Text="{Binding Capacite}"/>
+                        <TextBlock Text="Seuil minimal (L)" Style="{StaticResource Champ}"/><TextBox Text="{Binding SeuilMinimal}"/>
+                        <TextBlock Text="Tolérance d'écart de jaugeage (L et %)" Style="{StaticResource Champ}"/>
+                        <StackPanel Orientation="Horizontal"><TextBox Text="{Binding ToleranceLitres}" Width="80"/><TextBox Text="{Binding TolerancePct}" Width="60"/></StackPanel>
+                        <CheckBox Content="Active" IsChecked="{Binding CuveActive}" Margin="0,8"/>
+                        <Button Content="Enregistrer la cuve" Style="{StaticResource Principal}" Command="{Binding EnregistrerCuveCommand}" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="Volucompteurs et pistolets">
+            <Grid Margin="8">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="300"/><ColumnDefinition/><ColumnDefinition Width="340"/></Grid.ColumnDefinitions>
+                <DockPanel Margin="0,0,12,0">
+                    <Border DockPanel.Dock="Bottom" Style="{StaticResource Carte}" IsEnabled="{Binding PeutEquipements}" Margin="0,8,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Nouveau volucompteur" FontWeight="SemiBold"/>
+                            <TextBlock Text="Code" Style="{StaticResource Champ}"/><TextBox Text="{Binding CodeVolucompteur}"/>
+                            <TextBlock Text="Libellé" Style="{StaticResource Champ}"/><TextBox Text="{Binding LibelleVolucompteur}"/>
+                            <Button Content="Créer" Command="{Binding CreerVolucompteurCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <DataGrid ItemsSource="{Binding Volucompteurs}" SelectedItem="{Binding Volucompteur}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="80"/>
+                            <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                            <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}" Width="50"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <DataGrid Grid.Column="1" ItemsSource="{Binding Volucompteur.Pistolets}" SelectedItem="{Binding Pistolet}" Margin="0,0,12,0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Pistolet" Binding="{Binding Code}" Width="80"/>
+                        <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="*"/>
+                        <DataGridTextColumn Header="Cuve" Binding="{Binding Cuve}" Width="70"/>
+                        <DataGridTextColumn Header="Dernier index" Binding="{Binding DernierIndex, StringFormat=N3}" Width="110"/>
+                        <DataGridTextColumn Header="Cycle" Binding="{Binding Cycle}" Width="50"/>
+                        <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}" Width="50"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Border Grid.Column="2" Style="{StaticResource Carte}" IsEnabled="{Binding PeutEquipements}" VerticalAlignment="Top">
+                    <StackPanel>
+                        <Button Content="Nouveau pistolet" Command="{Binding NouveauPistoletCommand}" HorizontalAlignment="Left"/>
+                        <TextBlock Text="Code" Style="{StaticResource Champ}"/><TextBox Text="{Binding CodePistolet}"/>
+                        <TextBlock Text="Carburant" Style="{StaticResource Champ}"/><ComboBox ItemsSource="{Binding Carburants}" SelectedItem="{Binding ProduitPistolet}" DisplayMemberPath="Designation"/>
+                        <TextBlock Text="Cuve d'alimentation" Style="{StaticResource Champ}"/><ComboBox ItemsSource="{Binding CuvesPistolet}" SelectedItem="{Binding CuvePistolet}" DisplayMemberPath="Code"/>
+                        <TextBlock Text="Index maximum du compteur" Style="{StaticResource Champ}"/><TextBox Text="{Binding IndexMaximum}"/>
+                        <TextBlock Text="Index de départ" Style="{StaticResource Champ}"/><TextBox Text="{Binding IndexInitial}"/>
+                        <CheckBox Content="Actif" IsChecked="{Binding PistoletActif}" Margin="0,8"/>
+                        <TextBlock Text="Remise à zéro ou remplacement d'un compteur : passer par une demande d'événement compteur, approuvée et tracée." TextWrapping="Wrap" Foreground="#8C959F" Margin="0,0,0,8"/>
+                        <Button Content="Enregistrer le pistolet" Style="{StaticResource Principal}" Command="{Binding EnregistrerPistoletCommand}" HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="Comptes et reprises de départ">
+            <Grid Margin="8">
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="380"/></Grid.ColumnDefinitions>
+                <DockPanel Margin="0,0,12,0">
+                    <Border DockPanel.Dock="Bottom" Style="{StaticResource Carte}" IsEnabled="{Binding PeutComptes}" Margin="0,8,0,0">
+                        <WrapPanel>
+                            <TextBlock Text="Solde de départ du compte sélectionné" Style="{StaticResource Etiquette}"/>
+                            <TextBox Text="{Binding SoldeInitial, UpdateSourceTrigger=PropertyChanged}" Width="110"/>
+                            <DatePicker SelectedDate="{Binding DateSolde}"/>
+                            <Button Content="Enregistrer…" Command="{Binding EnregistrerSoldeInitialCommand}"/>
+                        </WrapPanel>
+                    </Border>
+                    <DataGrid ItemsSource="{Binding Comptes}" SelectedItem="{Binding Compte}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="110"/>
+                            <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="130"/>
+                            <DataGridTextColumn Header="Banque" Binding="{Binding Banque}" Width="110"/>
+                            <DataGridTextColumn Header="Solde" Binding="{Binding Solde, StringFormat=N2}" Width="110"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <StackPanel Grid.Column="1">
+                    <Border Style="{StaticResource Carte}" IsEnabled="{Binding PeutComptes}">
+                        <StackPanel>
+                            <TextBlock Text="Nouveau compte financier" FontWeight="SemiBold"/>
+                            <TextBlock Text="Code" Style="{StaticResource Champ}"/><TextBox Text="{Binding CodeCompte}"/>
+                            <TextBlock Text="Libellé" Style="{StaticResource Champ}"/><TextBox Text="{Binding LibelleCompte}"/>
+                            <TextBlock Text="Type" Style="{StaticResource Champ}"/><ComboBox ItemsSource="{Binding TypesCompte}" SelectedItem="{Binding TypeCompte}"/>
+                            <TextBlock Text="Banque et RIB (comptes bancaires)" Style="{StaticResource Champ}"/>
+                            <StackPanel Orientation="Horizontal"><TextBox Text="{Binding Banque}" Width="120"/><TextBox Text="{Binding Rib}" Width="190"/></StackPanel>
+                            <Button Content="Créer le compte" Command="{Binding CreerCompteCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Carte}" IsEnabled="{Binding PeutStockInitial}">
+                        <StackPanel>
+                            <TextBlock Text="Stock de départ" FontWeight="SemiBold"/>
+                            <TextBlock Text="Produit" Style="{StaticResource Champ}"/><ComboBox ItemsSource="{Binding Produits}" SelectedItem="{Binding ProduitStock}" DisplayMemberPath="Designation"/>
+                            <TextBlock Text="Cuve (carburants)" Style="{StaticResource Champ}"/><ComboBox ItemsSource="{Binding CuvesStock}" SelectedItem="{Binding CuveStock}" DisplayMemberPath="Code"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <TextBlock Text="Quantité" Style="{StaticResource Etiquette}"/><TextBox Text="{Binding QuantiteStock}" Width="90"/>
+                                <TextBlock Text="Coût HT" Style="{StaticResource Etiquette}"/><TextBox Text="{Binding CoutStock}" Width="80"/>
+                            </StackPanel>
+                            <Button Content="Enregistrer…" Command="{Binding EnregistrerStockInitialCommand}" HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </TabItem>
+    </TabControl>
+</UserControl>
