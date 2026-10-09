@@ -30,7 +30,8 @@ try
         .WriteTo.Console()
         .WriteTo.File(new CompactJsonFormatter(),
             Path.Combine(ctx.Configuration["Ssi:DossierLogs"] ?? Path.Combine(AppContext.BaseDirectory, "logs"), "ssi-api-.json"),
-            rollingInterval: RollingInterval.Day, retainedFileCountLimit: 30, fileSizeLimitBytes: 50_000_000, rollOnFileSizeLimit: true));
+            rollingInterval: RollingInterval.Day, retainedFileCountLimit: 30, fileSizeLimitBytes: 50_000_000, rollOnFileSizeLimit: true, shared: true),
+        preserveStaticLogger: true); // le journal d'amorçage reste le logger statique (plusieurs hôtes en test)
 
     var chaine = builder.Configuration.GetConnectionString("Ssi")
                  ?? throw new InvalidOperationException("Chaîne de connexion 'Ssi' absente de la configuration.");

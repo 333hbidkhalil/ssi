@@ -52,8 +52,27 @@ public class MoteurTresorerie(ISsiDb db, IUtilisateurCourant utilisateur, IHorlo
         => db.MouvementsFinanciers.Where(m => m.CompteId == compteId && (jusqua == null || m.DateOperation <= jusqua))
             .SumAsync(m => m.Montant, ct);
 
-    /// <summary>Compte par défaut d'un type (premier compte actif), utilisé pour les encaissements de poste.</summary>
+    /// <summary>Compte par défaut d'un type : le plus ancien compte actif (le compte principal créé à l'installation), utilisé quand aucun compte n'est choisi.</summary>
     public async Task<CompteFinancier> CompteParDefautAsync(TypeCompteFinancier type, CancellationToken ct = default)
-        => await db.ComptesFinanciers.AsNoTracking().Where(c => c.Type == type && c.Actif).OrderBy(c => c.Code).FirstOrDefaultAsync(ct)
+        => await db.ComptesFinanciers.AsNoTracking().Where(c => c.Type == type && c.Actif).OrderBy(c => c.CreeLe).ThenBy(c => c.Code).FirstOrDefaultAsync(ct)
            ?? throw new RegleMetierException($"Aucun compte financier actif de type {type} n'est paramétré.", "COMPTE_ABSENT");
+
+    /// <summary>Compte de destination d'un mode de règlement (H-11) : espèces → caisse, carte → attente TPE, chèque/effet → à encaisser, virement → banque.</summary>
+    public static TypeCompteFinancier TypePourMode(ModeReglement mode) => mode switch
+    {
+        ModeReglement.Carte => TypeCompteFinancier.AttenteCarte,
+        ModeReglement.Cheque or ModeReglement.Effet => TypeCompteFinancier.ChequesAEncaisser,
+        ModeReglement.Virement => TypeCompteFinancier.Banque,
+        ModeReglement.Credit => throw new RegleMetierException("Le crédit n'est pas un moyen de paiement : il ne crée aucun mouvement de trésorerie."),
+        _ => TypeCompteFinancier.Caisse
+    };
+
+    /// <summary>Compte choisi (vérifié) ou compte par défaut du mode.</summary>
+    public async Task<CompteFinancier> CompteAsync(Guid? compteId, ModeReglement mode, CancellationToken ct = default)
+    {
+        if (compteId is null) return await CompteParDefautAsync(TypePourMode(mode), ct);
+        var c = await db.ComptesFinanciers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == compteId, ct) ?? throw new NonTrouveException("Compte financier introuvable.");
+        if (!c.Actif) throw new RegleMetierException($"Le compte {c.Code} est inactif.");
+        return c;
+    }
 }

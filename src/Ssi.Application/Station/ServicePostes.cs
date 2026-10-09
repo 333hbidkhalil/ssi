@@ -18,7 +18,7 @@ namespace Ssi.Application.Station;
 /// </summary>
 public class ServicePostes(
     ISsiDb db, IHorloge horloge, Audit audit, IUtilisateurCourant courant, INumerotation numerotation,
-    Tarifs tarifs, Fiscalite fiscalite, Parametres parametres, MoteurStock stock, MoteurTresorerie tresorerie)
+    Tarifs tarifs, Fiscalite fiscalite, Parametres parametres, MoteurStock stock, MoteurTresorerie tresorerie, Soldes soldes)
 {
     public const string TypeDocument = "POSTE";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -455,20 +455,9 @@ public class ServicePostes(
         return new RapportPosteDto(theorique, totalReg, ecart, interpretation, parProduit, actifs, parOperateur, parMode, manquants, alertes, responsable);
     }
 
-    /// <summary>Encours client (R-22) = créances sur factures validées + bons de crédit de postes non facturés.</summary>
+    /// <summary>Encours client (R-22) = créances sur factures validées + bons de crédit non facturés.</summary>
     public async Task<decimal> EncoursClientAsync(Guid clientId, CancellationToken ct)
-    {
-        var factures = await db.Factures.Where(f => f.ClientId == clientId && f.Statut == StatutDocument.Valide)
-            .Select(f => new { f.Id, f.Type, f.TotalTtc, f.FactureOrigineId }).ToListAsync(ct);
-        var ids = factures.Select(f => f.Id).ToList();
-        var affecte = await db.AffectationsReglement.Where(a => a.FactureId != null && ids.Contains(a.FactureId.Value)
-                && db.Reglements.Any(r => r.Id == a.ReglementId && r.Statut == StatutReglement.Valide))
-            .SumAsync(a => a.Montant, ct);
-        var creance = factures.Where(f => f.Type == TypeFacture.Facture).Sum(f => f.TotalTtc)
-                      - factures.Where(f => f.Type == TypeFacture.Avoir).Sum(f => f.TotalTtc) - affecte;
-        var bons = await db.ReglementsPoste.Where(r => r.ClientId == clientId && r.Mode == ModeReglement.Credit && r.FactureId == null).SumAsync(r => r.Montant, ct);
-        return creance + bons;
-    }
+        => await soldes.CreanceClientAsync(clientId, ct) + await soldes.BonsNonFacturesAsync(clientId, ct);
 
     // ---------- Événements de compteur ----------
 
