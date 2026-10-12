@@ -36,7 +36,7 @@ Les tests unitaires des règles (`tests/Ssi.Domain.Tests`) reprennent chaque exe
 
 ## Correspondance avec les tests automatisés (état au 09/10/2026)
 
-`dotnet test` exécute **57 tests, tous verts** : 27 tests unitaires des règles de calcul (`tests/Ssi.Domain.Tests`) et 30 tests d'intégration sur PostgreSQL 16 réel (`tests/Ssi.IntegrationTests`, une base créée par migration pour chaque classe de tests).
+`dotnet test` exécute **58 tests, tous verts** : 27 tests unitaires des règles de calcul (`tests/Ssi.Domain.Tests`) et 31 tests d'intégration sur PostgreSQL 16 réel (`tests/Ssi.IntegrationTests`, une base créée par migration pour chaque classe de tests).
 
 | Classe | Tests |
 |---|---|
@@ -45,5 +45,6 @@ Les tests unitaires des règles (`tests/Ssi.Domain.Tests`) reprennent chaque exe
 | `ScenariosPilotage` | Scénarios 10, 16, 17, 19, 20 ; facture client PDF |
 | `ScenarioSauvegarde` | Scénario 18 : sauvegarde vérifiée (instantané, restauration de contrôle, 21 totaux) puis restauration identique |
 | `ContratClientWpf` | Chaque lecture des 15 écrans Windows (même URL, mêmes filtres, même type) ; menu selon les permissions ; parcours caisse, parcours commande → réception → facture fournisseur, avoir client et fiche employé modifiée sans accès aux salaires, avec les corps de requête du client |
+| `ScenarioCharge` | 8 postes simultanés, rôles réels, 20 tours chacun : aucune erreur, aucune vente perdue ni doublée par les rejeux, stock d'article et caisse exacts, banque = somme des versements, numérotation continue (ventes, factures, postes, virements), contrôles de cohérence conformes, 95 % des appels sous 2 s |
 
 Le client WPF est compilé sous Linux mais ne peut pas y être exécuté : sa recette visuelle se fait sur Windows. `ContratClientWpf` garantit en attendant que chaque écran lit des données réelles de l'API.

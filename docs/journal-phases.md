@@ -24,9 +24,10 @@ Rentabilité par activité (station gasoil et sans plomb, vrac, lubrifiants, aut
 
 ## Phase 6 — Validation : en cours
 
-* Fait : 57 tests automatisés verts, dont la concurrence (validation simultanée), les permissions, l'idempotence, la sauvegarde et la restauration.
+* Fait : 58 tests automatisés verts, dont la concurrence (validation simultanée), les permissions, l'idempotence, la sauvegarde et la restauration.
 * Fait : client Windows WPF à 15 écrans (connexion, menu selon les droits, postes et relevés, caisse, ventes d'articles, stocks et jaugeages, achats et réceptions, vrac, clients et fournisseurs, factures, avoirs et règlements, trésorerie et charges, personnel, rentabilité et simulation, rapports et exports, paramétrage de la station, administration). Toutes les opérations de l'API ont désormais un écran. Il compile et chaque lecture d'écran est testée contre l'API (`ContratClientWpf`), ce qui a déjà permis de corriger deux défauts (validation de caisse sans motif, détail des erreurs de saisie).
-* Reste : recette visuelle du client sur Windows ; essai de charge à 8 postes simultanés.
+* Fait : essai de charge à 8 postes simultanés (`ScenarioCharge`), chaque poste avec son propre compte et son rôle réel : trois pompistes vendent au comptoir le même article (avec double envoi d'une requête sur cinq), la caisse vend et verse en banque, le commercial facture, le responsable de station enchaîne des postes de pompe complets, le comptable et l'auditeur consultent tableau de bord, rentabilité, rapports et contrôles. Résultat sur la machine de test : 432 appels en 9 s, aucune erreur ni conflit, aucune vente perdue ou doublée, stock et caisse exacts au dirham près, numérotation continue, contrôles de cohérence conformes ; médiane d'une vente 107 ms, 95 % des appels sous 2 s (le plus lent : tableau de bord pendant les écritures, 1,9 s).
+* Reste : recette visuelle du client sur Windows ; mesurer les mêmes temps sur le serveur réel du réseau de la station (l'essai ci-dessus tourne dans le même processus que l'API, sans réseau).
 
 ## Phase 7 — Livraison : préparée
 
