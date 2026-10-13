@@ -2,7 +2,7 @@
 
 Ce guide s'adresse à la personne qui installe SSI dans la station. Les scripts n'ouvrent **aucun accès depuis Internet** : l'API n'écoute que le sous-réseau local et PostgreSQL n'est joignable que depuis le serveur.
 
-> **Statut des scripts.** `sauvegarder.ps1` et `restaurer.ps1` ont été exécutés sous PowerShell 7 contre PostgreSQL 16 : sauvegarde VERIFIEE avec 21 totaux identiques, restauration dans une nouvelle base, refus d'écraser une base existante, bascule après recontrôle des totaux, refus d'un fichier altéré, échec franc (sans blocage) si un total ne peut pas être calculé. Les étapes propres à Windows (service, pare-feu, certificat, tâche planifiée, `Restart-Service`) n'ont pas pu être exécutées ici : la première installation doit être faite sur un poste de test en suivant la recette du § 6.
+> **Statut des scripts.** Tous les scripts de ce dossier sont exécutés sur Windows Server à chaque envoi de code (chaîne `.github/workflows/windows.yml`, compte rendu dans `docs/recette-windows.md`) : installation du serveur et d'un poste, service, pare-feu, certificat, tâche planifiée, sauvegarde VERIFIEE avec 21 totaux identiques, restauration dans une nouvelle base. La première installation sur le matériel de la station reste à faire en suivant la recette du § 6.
 
 ## 1. Préparer les fichiers (poste de développement)
 

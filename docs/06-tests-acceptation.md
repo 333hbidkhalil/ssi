@@ -36,7 +36,7 @@ Les tests unitaires des règles (`tests/Ssi.Domain.Tests`) reprennent chaque exe
 
 ## Correspondance avec les tests automatisés (état au 09/10/2026)
 
-`dotnet test` exécute **58 tests, tous verts** : 27 tests unitaires des règles de calcul (`tests/Ssi.Domain.Tests`) et 31 tests d'intégration sur PostgreSQL 16 réel (`tests/Ssi.IntegrationTests`, une base créée par migration pour chaque classe de tests).
+`dotnet test` exécute **60 tests, tous verts** : 27 tests unitaires des règles de calcul (`tests/Ssi.Domain.Tests`) et 33 tests d'intégration sur PostgreSQL 16 réel (`tests/Ssi.IntegrationTests`, une base créée par migration pour chaque classe de tests).
 
 | Classe | Tests |
 |---|---|
@@ -48,3 +48,8 @@ Les tests unitaires des règles (`tests/Ssi.Domain.Tests`) reprennent chaque exe
 | `ScenarioCharge` | 8 postes simultanés, rôles réels, 20 tours chacun : aucune erreur, aucune vente perdue ni doublée par les rejeux, stock d'article et caisse exacts, banque = somme des versements, numérotation continue (ventes, factures, postes, virements), contrôles de cohérence conformes, 95 % des appels sous 2 s |
 
 Le client WPF est compilé sous Linux mais ne peut pas y être exécuté : sa recette visuelle se fait sur Windows. `ContratClientWpf` garantit en attendant que chaque écran lit des données réelles de l'API.
+
+
+## Recette Windows
+
+La chaîne GitHub Actions `.github/workflows/windows.yml` exécute les tests sous Windows, installe serveur et poste avec les scripts livrés, fait parcourir chaque écran par un robot et lance la sauvegarde planifiée puis une restauration. Compte rendu : `docs/recette-windows.md`.

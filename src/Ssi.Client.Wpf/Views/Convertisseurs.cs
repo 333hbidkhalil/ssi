@@ -46,7 +46,7 @@ public sealed class LibelleEnum : IValueConverter
         ["LivraisonDirecte"] = "Livraison directe", ["BonsStation"] = "Bons station", ["AchatStock"] = "Achat stock",
         ["AchatVrac"] = "Achat vrac", ["Decaissement"] = "Décaissement",
         // Trésorerie, rentabilité, personnel
-        ["AttenteCarte"] = "Carte (TPE) à encaisser", ["ChequesAEncaisser"] = "Chèques à encaisser",
+        ["AttenteCarte"] = "Carte (TPE)", ["ChequesAEncaisser"] = "Chèques à encaisser",
         ["ChiffreAffaires"] = "Chiffre d'affaires", ["MargeBrute"] = "Marge brute", ["CoutDirect"] = "Coût direct",
         ["GasoilStation"] = "Gasoil — station", ["SansPlombStation"] = "Sans plomb — station", ["GasoilVrac"] = "Gasoil — vrac",
         ["SansPlombVrac"] = "Sans plomb — vrac", ["ChargeSociale"] = "Charge sociale",

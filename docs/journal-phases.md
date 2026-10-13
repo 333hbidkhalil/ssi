@@ -1,6 +1,6 @@
 # SSI — Journal des phases
 
-Une fonctionnalité n'est déclarée opérationnelle que si elle est reliée à la base et couverte par un test automatisé (voir `06-tests-acceptation.md`). Dernière mise à jour : 09/10/2026.
+Une fonctionnalité n'est déclarée opérationnelle que si elle est reliée à la base et couverte par un test automatisé (voir `06-tests-acceptation.md`). Dernière mise à jour : 13/10/2026.
 
 ## Phase 1 — Analyse : terminée
 
@@ -24,18 +24,19 @@ Rentabilité par activité (station gasoil et sans plomb, vrac, lubrifiants, aut
 
 ## Phase 6 — Validation : en cours
 
-* Fait : 58 tests automatisés verts, dont la concurrence (validation simultanée), les permissions, l'idempotence, la sauvegarde et la restauration.
+* Fait : 60 tests automatisés verts, sous Linux et sous Windows, dont la concurrence (validation simultanée), les permissions, l'idempotence, la sauvegarde et la restauration.
 * Fait : client Windows WPF à 15 écrans (connexion, menu selon les droits, postes et relevés, caisse, ventes d'articles, stocks et jaugeages, achats et réceptions, vrac, clients et fournisseurs, factures, avoirs et règlements, trésorerie et charges, personnel, rentabilité et simulation, rapports et exports, paramétrage de la station, administration). Toutes les opérations de l'API ont désormais un écran. Il compile et chaque lecture d'écran est testée contre l'API (`ContratClientWpf`), ce qui a déjà permis de corriger deux défauts (validation de caisse sans motif, détail des erreurs de saisie).
 * Fait : essai de charge à 8 postes simultanés (`ScenarioCharge`), chaque poste avec son propre compte et son rôle réel : trois pompistes vendent au comptoir le même article (avec double envoi d'une requête sur cinq), la caisse vend et verse en banque, le commercial facture, le responsable de station enchaîne des postes de pompe complets, le comptable et l'auditeur consultent tableau de bord, rentabilité, rapports et contrôles. Résultat sur la machine de test : 432 appels en 9 s, aucune erreur ni conflit, aucune vente perdue ou doublée, stock et caisse exacts au dirham près, numérotation continue, contrôles de cohérence conformes ; médiane d'une vente 107 ms, 95 % des appels sous 2 s (le plus lent : tableau de bord pendant les écritures, 1,9 s).
-* Reste : recette visuelle du client sur Windows ; mesurer les mêmes temps sur le serveur réel du réseau de la station (l'essai ci-dessus tourne dans le même processus que l'API, sans réseau).
+* Fait : recette complète sur Windows à chaque envoi de code (`docs/recette-windows.md`) : installation serveur et poste par les scripts livrés, 34 écrans et onglets ouverts par un robot sans erreur, sauvegarde planifiée VERIFIEE et restauration. Elle a permis de corriger huit défauts, dont trois écrans absents du menu et une sauvegarde planifiée qui échouait sous Windows.
+* Reste : un regard humain sur le poste réel de la station ; mesurer les temps de réponse sur le serveur et le réseau réels (l'essai de charge tourne dans le même processus que l'API, sans réseau).
 
 ## Phase 7 — Livraison : préparée
 
-* Fait : `deploy/LISEZMOI.md`, installation serveur et postes, sauvegarde vérifiée planifiée avec copie externe facultative, restauration sans écrasement avec bascule contrôlée. Les scripts de sauvegarde et de restauration ont été exécutés sous PowerShell 7.
-* Reste : première installation sur un poste Windows de test (service, pare-feu, certificat, tâche planifiée).
+* Fait : `deploy/LISEZMOI.md`, installation serveur et postes, sauvegarde vérifiée planifiée avec copie externe facultative, restauration sans écrasement avec bascule contrôlée. Tous les scripts ont été exécutés sur Windows Server (installation du serveur et d'un poste, service, pare-feu, certificat, tâche planifiée, sauvegarde vérifiée, restauration).
+* Reste : installation sur le matériel de la station et choix du support de copie externe des sauvegardes.
 
 ## Limites connues
 
-* Le client n'a pas encore été essayé sur un poste Windows : son comportement visuel (mise en page, navigation au clavier) reste à recetter.
+* Le client a été recetté sur Windows par un robot (captures dans la branche `recette-windows`) ; un regard humain sur le poste réel reste nécessaire.
 * SSI est un outil de gestion. Il n'est pas un logiciel de comptabilité certifié et ne remplace pas la tenue comptable légale.
 * Les taux de TVA initiaux sont à valider par le comptable (H-03) avant toute mise en production.
