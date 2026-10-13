@@ -21,5 +21,6 @@ Copy-Item -Recurse -Force "$source\*" $Dossier
 $raccourci = (New-Object -ComObject WScript.Shell).CreateShortcut("$env:PUBLIC\Desktop\SSI.lnk")
 $raccourci.TargetPath = Join-Path $Dossier "Ssi.Client.Wpf.exe"
 $raccourci.Save()
+if ($PSVersionTable.PSVersion.Major -lt 6) { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 }
 try { Invoke-WebRequest -UseBasicParsing "https://${Serveur}:$Port/health" -TimeoutSec 5 | Out-Null; Write-Host "Serveur joignable." -ForegroundColor Green }
 catch { Write-Warning "Serveur injoignable depuis ce poste : vérifiez le réseau et le pare-feu du serveur." }

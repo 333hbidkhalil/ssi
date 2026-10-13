@@ -27,13 +27,14 @@ $ErrorActionPreference = "Stop"
 function Etape($m) { Write-Host "`n=== $m" -ForegroundColor Cyan }
 function Secret([int]$n) {
     $c = [char[]]"ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"
-    $b = [byte[]]::new($n); [System.Security.Cryptography.RandomNumberGenerator]::Fill($b)
+    $b = New-Object byte[] $n; [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)   # compatible Windows PowerShell 5.1
     -join ($b | ForEach-Object { $c[$_ % $c.Length] })
 }
 
 $psql = Join-Path $PgBin "psql.exe"
 # Exécute une commande SQL en super-utilisateur ; arrêt immédiat si elle échoue (rien ne doit être tenu pour fait à tort).
 function Sql([string]$base, [string]$commande) {
+    $ErrorActionPreference = "Continue"   # Windows PowerShell 5.1 : un NOTICE de psql sur la sortie d'erreur ne doit pas interrompre ; seul le code de sortie compte
     & $psql -X -q -v ON_ERROR_STOP=1 -U $PgSuperUtilisateur -h 127.0.0.1 -d $base -c $commande | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "Commande SQL en échec sur la base '$base' (code $LASTEXITCODE) : installation interrompue." }
 }
@@ -105,7 +106,7 @@ Etape "Vérification"
 # (PowerShell 7 : -SkipCertificateCheck ; Windows PowerShell 5.1 : rappel de validation).
 $appel = @{ UseBasicParsing = $true; TimeoutSec = 5; Uri = "https://localhost:$Port/health" }
 if ($PSVersionTable.PSVersion.Major -ge 6) { $appel.SkipCertificateCheck = $true }
-else { [Net.ServicePointManager]::ServerCertificateValidationCallback = { $true } }
+else { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; [Net.ServicePointManager]::ServerCertificateValidationCallback = { $true } }
 $ok = $false; $derniereErreur = ""
 for ($i = 0; $i -lt 30 -and -not $ok; $i++) {
     Start-Sleep -Seconds 2

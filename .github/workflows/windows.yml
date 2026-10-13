@@ -55,23 +55,29 @@ jobs:
           dotnet publish src/Ssi.Api -c Release -r win-x64 --self-contained -o deploy/publish/api
           dotnet publish src/Ssi.Client.Wpf -c Release -r win-x64 --self-contained -o deploy/publish/client
 
-      - name: Installer le serveur (deploy/installer-serveur.ps1)
+      - name: Installation d'essai sous Windows PowerShell 5.1 (deploy/Installer-SSI-essai.cmd → installer-essai.ps1)
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force recette | Out-Null
-          $env:PGPASSWORD = "root"
-          & ./deploy/installer-serveur.ps1 -PgBin $env:PGBIN *>&1 | Tee-Object -FilePath recette/installation-serveur.log
-          $mdp = (Select-String -Path recette/installation-serveur.log -Pattern "Compte initial : admin / (\S+)").Matches[0].Groups[1].Value
-          if (-not $mdp) { throw "Mot de passe initial introuvable dans la sortie de l'installation." }
+          # Même chemin que l'utilisateur : Windows PowerShell 5.1, serveur + poste sur la même machine.
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/installer-essai.ps1 -PgBin $env:PGBIN -SansLancement *>&1 | Tee-Object -FilePath recette/installation-essai.log
+          if ($LASTEXITCODE) { throw "installer-essai.ps1 en échec ($LASTEXITCODE)" }
+          $fiche = Join-Path ([Environment]::GetFolderPath("Desktop")) "SSI - identifiants d'essai.txt"
+          $mdp = (Select-String -Path $fiche -Pattern "Mot de passe initial : (\S+)").Matches[0].Groups[1].Value
+          if (-not $mdp) { throw "Identifiants d'essai introuvables sur le bureau." }
           "SSI_ADMIN=$mdp" >> $env:GITHUB_ENV
-          Get-Service SSIApi | Format-List Name, Status, StartType | Out-File -Append recette/installation-serveur.log
-          Get-NetFirewallRule -DisplayName "SSI API*" | Get-NetFirewallAddressFilter | Format-List | Out-File -Append recette/installation-serveur.log
+          Get-Service SSIApi | Format-List Name, Status, StartType | Out-File -Append recette/installation-essai.log
+          Get-NetFirewallRule -DisplayName "SSI API*" | Get-NetFirewallAddressFilter | Format-List | Out-File -Append recette/installation-essai.log
+          Get-Content "C:\Program Files\SSI\appsettings.json" | Out-File -Append recette/installation-essai.log
 
-      - name: Installer le poste client (deploy/installer-poste.ps1)
+      - name: Paquet d'installation d'essai
         shell: pwsh
-        run: |
-          & ./deploy/installer-poste.ps1 -Serveur localhost -Certificat C:\SSI\Certificats\ssi-serveur.cer *>&1 | Tee-Object -FilePath recette/installation-poste.log
-          Get-Content "C:\Program Files\SSI\appsettings.json" | Out-File -Append recette/installation-poste.log
+        run: Compress-Archive -Path deploy/* -DestinationPath SSI-installation-essai.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SSI-installation-essai
+          path: SSI-installation-essai.zip
 
       - name: Recette du client par le robot
         shell: pwsh
