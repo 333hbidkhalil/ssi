@@ -16,7 +16,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="110"/>
                             <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
-                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="130"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource Libelle}}" Width="130"/>
                             <DataGridTextColumn Header="Banque" Binding="{Binding Banque}" Width="120"/>
                             <DataGridTextColumn Header="Solde" Binding="{Binding Solde, StringFormat=N2}" Width="120"/>
                         </DataGrid.Columns>
@@ -54,7 +54,7 @@
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Tiers" Binding="{Binding Tiers}" Width="*"/>
                                     <DataGridTextColumn Header="Pièce" Binding="{Binding Piece}" Width="110"/>
-                                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70"/>
+                                    <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource Libelle}}" Width="70"/>
                                     <DataGridTextColumn Header="Échéance" Binding="{Binding Echeance, StringFormat=dd/MM/yy}" Width="75"/>
                                     <DataGridTextColumn Header="Reste dû" Binding="{Binding ResteDu, StringFormat=N2}" Width="95"/>
                                 </DataGrid.Columns>
@@ -100,7 +100,7 @@
                     <DataGrid ItemsSource="{Binding Mouvements}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Date" Binding="{Binding DateOperation, StringFormat=dd/MM/yy}" Width="75"/>
-                            <DataGridTextColumn Header="Nature" Binding="{Binding Nature}" Width="170"/>
+                            <DataGridTextColumn Header="Nature" Binding="{Binding Nature, Converter={StaticResource Libelle}}" Width="170"/>
                             <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
                             <DataGridTextColumn Header="Pièce" Binding="{Binding DocumentRef}" Width="120"/>
                             <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
@@ -157,14 +157,14 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="110"/>
                         <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yy}" Width="75"/>
-                        <DataGridTextColumn Header="Catégorie" Binding="{Binding Categorie}" Width="130"/>
+                        <DataGridTextColumn Header="Catégorie" Binding="{Binding Categorie, Converter={StaticResource Libelle}}" Width="130"/>
                         <DataGridTextColumn Header="Centre" Binding="{Binding CentreCout}" Width="120"/>
                         <DataGridTextColumn Header="Tiers" Binding="{Binding Tiers}" Width="130"/>
                         <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
                         <DataGridTextColumn Header="TTC" Binding="{Binding MontantTtc, StringFormat=N2}" Width="95"/>
                         <DataGridCheckBoxColumn Header="Fixe" Binding="{Binding Fixe}" Width="45"/>
                         <DataGridTextColumn Header="Reste dû" Binding="{Binding ResteDu, StringFormat=N2}" Width="90"/>
-                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="70"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="70"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

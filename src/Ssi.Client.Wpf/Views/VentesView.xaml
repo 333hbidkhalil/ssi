@@ -68,10 +68,10 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="120"/>
                     <DataGridTextColumn Header="Heure" Binding="{Binding Horodatage, StringFormat=dd/MM HH:mm}" Width="85"/>
-                    <DataGridTextColumn Header="Mode" Binding="{Binding ModeReglement}" Width="80"/>
+                    <DataGridTextColumn Header="Mode" Binding="{Binding ModeReglement, Converter={StaticResource Libelle}}" Width="80"/>
                     <DataGridTextColumn Header="Client" Binding="{Binding Client}" Width="*"/>
                     <DataGridTextColumn Header="TTC" Binding="{Binding TotalTtc, StringFormat=N2}" Width="90"/>
-                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="70"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="70"/>
                 </DataGrid.Columns>
             </DataGrid>
         </DockPanel>

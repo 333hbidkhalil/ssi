@@ -16,7 +16,7 @@
             <DataGrid DockPanel.Dock="Bottom" ItemsSource="{Binding Elements}" MaxHeight="200" Margin="0,8,0,0">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Employé" Binding="{Binding Employe}" Width="*"/>
-                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource Libelle}}" Width="110"/>
                     <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
                     <DataGridTextColumn Header="Commentaire" Binding="{Binding Commentaire}" Width="*"/>
                 </DataGrid.Columns>
@@ -73,7 +73,7 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Du" Binding="{Binding Debut, StringFormat=dd/MM/yy}" Width="75"/>
                                 <DataGridTextColumn Header="Au" Binding="{Binding Fin, StringFormat=dd/MM/yy}" Width="75"/>
-                                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
+                                <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource Libelle}}" Width="*"/>
                                 <DataGridCheckBoxColumn Header="Justifiée" Binding="{Binding Justifiee}" Width="65"/>
                             </DataGrid.Columns>
                         </DataGrid>

@@ -18,10 +18,16 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        var culture = CultureInfo.GetCultureInfo("fr-MA");
+        // Français (Maroc) avec l'espace comme séparateur des milliers : « 14 932,00 » plutôt que « 14.932,00 »,
+        // pour qu'un point affiché ne soit jamais confondu avec la virgule décimale (le point est accepté en saisie comme décimale).
+        var culture = (CultureInfo)CultureInfo.GetCultureInfo("fr-MA").Clone();
+        culture.NumberFormat.NumberGroupSeparator = culture.NumberFormat.CurrencyGroupSeparator = culture.NumberFormat.PercentGroupSeparator = "\u202F";
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = culture;
         Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentUICulture = culture;
-        FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(culture.IetfLanguageTag)));
+        // Les liaisons WPF formatent avec la culture standard de la langue de l'élément (pas avec un clone modifié) :
+        // fr-FR donne les mêmes formats de date et de nombre que fr-MA, avec l'espace fine comme séparateur des milliers.
+        // Aucun format monétaire (C) n'est utilisé : les montants sont suffixés « DH » explicitement.
+        FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(XmlLanguage.GetLanguage("fr-FR")));
         DispatcherUnhandledException += Inattendue;
 
         var config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile("appsettings.json", optional: true).Build();

@@ -15,7 +15,7 @@
                         <DataGridTextColumn Header="Valeur HT" Binding="{Binding Valeur, StringFormat=N2}" Width="110"/>
                         <DataGridTextColumn Header="Dernier jaugeage" Binding="{Binding DernierJaugeage, StringFormat=dd/MM HH:mm}" Width="110"/>
                         <DataGridTextColumn Header="Écart (L)" Binding="{Binding DernierEcartLitres, StringFormat=N0}" Width="80"/>
-                        <DataGridCheckBoxColumn Header="Hors tolérance" Binding="{Binding DernierEcartHorsTolerance}" Width="*"/>
+                        <DataGridCheckBoxColumn Header="Hors tolérance" Binding="{Binding DernierEcartHorsTolerance}" Width="110"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <WrapPanel DockPanel.Dock="Top" Margin="0,10,0,6" IsEnabled="{Binding PeutSaisir}">
@@ -45,8 +45,8 @@
                         <DataGridTextColumn Header="Écart %" Binding="{Binding EcartPct, StringFormat=N2}" Width="65"/>
                         <DataGridTextColumn Header="Valeur indicative" Binding="{Binding ValeurIndicative, StringFormat=N2}" Width="110"/>
                         <DataGridCheckBoxColumn Header="Hors tol." Binding="{Binding HorsTolerance}" Width="65"/>
-                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
-                        <DataGridTextColumn Header="Cause" Binding="{Binding Cause}" Width="110"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="80"/>
+                        <DataGridTextColumn Header="Cause" Binding="{Binding Cause, Converter={StaticResource Libelle}}" Width="110"/>
                         <DataGridTextColumn Header="Explication" Binding="{Binding Explication}" Width="*"/>
                         <DataGridTextColumn Header="Par" Binding="{Binding SaisiPar}" Width="80"/>
                     </DataGrid.Columns>
@@ -71,9 +71,9 @@
                         <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="130"/>
                         <DataGridTextColumn Header="Cuve" Binding="{Binding Cuve}" Width="70"/>
                         <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite, StringFormat=N3}" Width="90"/>
-                        <DataGridTextColumn Header="Cause" Binding="{Binding Cause}" Width="110"/>
+                        <DataGridTextColumn Header="Cause" Binding="{Binding Cause, Converter={StaticResource Libelle}}" Width="110"/>
                         <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="*"/>
-                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="80"/>
                         <DataGridTextColumn Header="Demandé par" Binding="{Binding DemandePar}" Width="90"/>
                         <DataGridTextColumn Header="Décidé par" Binding="{Binding DecidePar}" Width="90"/>
                     </DataGrid.Columns>
@@ -110,7 +110,7 @@
                     <DataGridTextColumn Header="Date" Binding="{Binding Horodatage, StringFormat=dd/MM/yy HH:mm}" Width="105"/>
                     <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="130"/>
                     <DataGridTextColumn Header="Cuve" Binding="{Binding Cuve}" Width="70"/>
-                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource Libelle}}" Width="120"/>
                     <DataGridTextColumn Header="Quantité" Binding="{Binding Quantite, StringFormat=N3}" Width="90"/>
                     <DataGridTextColumn Header="Coût unit." Binding="{Binding CoutUnitaire, StringFormat=N4}" Width="85"/>
                     <DataGridTextColumn Header="Valeur" Binding="{Binding Valeur, StringFormat=N2}" Width="100"/>

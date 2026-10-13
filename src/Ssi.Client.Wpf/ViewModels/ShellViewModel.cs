@@ -7,7 +7,11 @@ using Ssi.Contracts;
 
 namespace Ssi.Client.Wpf.ViewModels;
 
-public sealed record EntreeMenu(string Libelle, string Icone, Type Page, string[] Permissions);
+public sealed record EntreeMenu(string Libelle, string Icone, Type Page, string[] Permissions)
+{
+    /// <summary>Nom lu par les lecteurs d'écran et l'automatisation (sinon la description technique de l'enregistrement).</summary>
+    public override string ToString() => Libelle;
+}
 
 /// <summary>Fenêtre principale : connexion, puis menu construit d'après les permissions de l'utilisateur.</summary>
 public sealed partial class ShellViewModel : ViewModelBase

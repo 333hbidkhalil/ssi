@@ -34,7 +34,7 @@
                                 <DataGridTextColumn Header="Part du CA %" Binding="{Binding PartChiffreAffairesPct.Valeur, StringFormat=N1}" Width="85"/>
                             </DataGrid.Columns>
                         </DataGrid>
-                        <TextBlock Text="{Binding Resultat.Methode}" Foreground="#8C959F" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                        <TextBlock Text="{Binding Resultat.Methode, Converter={StaticResource Libelle}}" Foreground="#8C959F" TextWrapping="Wrap" Margin="0,6,0,0"/>
                         <ItemsControl ItemsSource="{Binding Avertissements}" Margin="0,6,0,0">
                             <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding StringFormat=• {0}}" Foreground="{StaticResource Attention}" TextWrapping="Wrap"/></DataTemplate></ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -61,7 +61,7 @@
                         <Border Style="{StaticResource Carte}" Width="220"><StackPanel><TextBlock Text="Seuil en litres de carburant" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding SeuilVolumeCarburant.Valeur, StringFormat=N0}" FontSize="18"/><TextBlock Text="{Binding SeuilVolumeCarburant.Raison}" Foreground="#8C959F" TextWrapping="Wrap"/></StackPanel></Border>
                         <Border Style="{StaticResource Carte}" Width="220"><StackPanel><TextBlock Text="Progression vers le seuil" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding ProgressionPct.Valeur, StringFormat={}{0:N1} %}" FontSize="18"/></StackPanel></Border>
                     </WrapPanel>
-                    <TextBlock Text="{Binding Methode}" Foreground="#8C959F" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Methode, Converter={StaticResource Libelle}}" Foreground="#8C959F" TextWrapping="Wrap"/>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Simulation" Visibility="{Binding PeutSimuler, Converter={StaticResource Visible}}">

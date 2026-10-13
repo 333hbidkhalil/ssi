@@ -129,7 +129,7 @@
                 <DataGrid ItemsSource="{Binding Sauvegardes}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Date" Binding="{Binding Horodatage, StringFormat=dd/MM/yy HH:mm}" Width="110"/>
-                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="90"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="90"/>
                         <DataGridTextColumn Header="Fichier" Binding="{Binding Fichier}" Width="*"/>
                         <DataGridTextColumn Header="Taille (octets)" Binding="{Binding Taille, StringFormat=N0}" Width="110"/>
                         <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="160"/>

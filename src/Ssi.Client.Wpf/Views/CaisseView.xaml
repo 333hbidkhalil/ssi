@@ -15,7 +15,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Session" Binding="{Binding Numero}" Width="*"/>
                     <DataGridTextColumn Header="Ouverture" Binding="{Binding Ouverture, StringFormat=dd/MM HH:mm}" Width="85"/>
-                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="75"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="75"/>
                     <DataGridTextColumn Header="Écart" Binding="{Binding Ecart, StringFormat=N2}" Width="70"/>
                 </DataGrid.Columns>
             </DataGrid>
@@ -26,7 +26,7 @@
                 <Border Style="{StaticResource Carte}">
                     <StackPanel>
                         <TextBlock FontSize="16" FontWeight="SemiBold">
-                            <Run Text="{Binding Detail.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Compte, Mode=OneWay}"/> — <Run Text="{Binding Detail.Statut, Mode=OneWay}"/>
+                            <Run Text="{Binding Detail.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Compte, Mode=OneWay}"/> — <Run Text="{Binding Detail.Statut, Mode=OneWay, Converter={StaticResource Libelle}}"/>
                         </TextBlock>
                         <UniformGrid Columns="6" Margin="0,8,0,0">
                             <StackPanel><TextBlock Text="Ouverture" Style="{StaticResource Etiquette}"/><TextBlock Text="{Binding Detail.SoldeOuverture, StringFormat=N2}" FontSize="15"/></StackPanel>
@@ -80,7 +80,7 @@
                 <DataGrid ItemsSource="{Binding Detail.Mouvements}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Heure" Binding="{Binding Horodatage, StringFormat=dd/MM HH:mm}" Width="90"/>
-                        <DataGridTextColumn Header="Nature" Binding="{Binding Nature}" Width="170"/>
+                        <DataGridTextColumn Header="Nature" Binding="{Binding Nature, Converter={StaticResource Libelle}}" Width="170"/>
                         <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
                         <DataGridTextColumn Header="Pièce" Binding="{Binding DocumentRef}" Width="120"/>
                         <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>

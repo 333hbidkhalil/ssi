@@ -54,7 +54,9 @@ try
     {
         var item = menu.Items.First(i => i.Name == libelle);
         item.Select();
-        Attendre(3500);
+        Attendre(2500);
+        Bouton("Actualiser (F5)").Invoke();   // données créées après l'ouverture de session
+        Attendre(2500);
         Controler(libelle);
         // Chaque onglet de l'écran
         var onglets = fenetre.FindAllDescendants(cf => cf.ByControlType(ControlType.TabItem)).Select(t => t.Name).ToList();

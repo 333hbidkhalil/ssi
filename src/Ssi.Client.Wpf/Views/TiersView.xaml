@@ -19,7 +19,7 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="70"/>
                         <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="*"/>
-                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource Libelle}}" Width="70"/>
                         <DataGridTextColumn Header="Encours" Binding="{Binding Encours, StringFormat=N2}" Width="95"/>
                         <DataGridCheckBoxColumn Header="Plafond dépassé" Binding="{Binding DepassementPlafond}" Width="70"/>
                     </DataGrid.Columns>
@@ -108,7 +108,7 @@
                         <DataGrid ItemsSource="{Binding Evaluation.DerniersIncidents}" MaxHeight="120">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="90"/>
-                                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110"/>
+                                <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource Libelle}}" Width="110"/>
                                 <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
                             </DataGrid.Columns>
                         </DataGrid>
@@ -125,7 +125,7 @@
                 <StackPanel Visibility="{Binding Releve, Converter={StaticResource SiTexte}}">
                     <TextBlock Foreground="#57606A">
                         Solde d'ouverture <Run Text="{Binding Releve.SoldeOuverture, Mode=OneWay, StringFormat=N2}"/> · solde de clôture
-                        <Run Text="{Binding Releve.SoldeCloture, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> (<Run Text="{Binding Releve.Sens, Mode=OneWay}"/>)
+                        <Run Text="{Binding Releve.SoldeCloture, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> (<Run Text="{Binding Releve.Sens, Mode=OneWay, Converter={StaticResource Libelle}}"/>)
                     </TextBlock>
                     <DataGrid ItemsSource="{Binding Releve.Lignes}" MaxHeight="320" Margin="0,4,0,0">
                         <DataGrid.Columns>

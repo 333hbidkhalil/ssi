@@ -24,7 +24,7 @@
                     <Button Content="Ajouter la ligne" Command="{Binding AjouterLigneCommand}"/>
                     <Button Content="Vider" Command="{Binding ViderLignesCommand}"/>
                 </WrapPanel>
-                <DataGrid ItemsSource="{Binding Lignes}" IsReadOnly="False" MaxHeight="170" Margin="0,6,0,6">
+                <DataGrid ItemsSource="{Binding Lignes}" IsReadOnly="False" MinHeight="90" MaxHeight="170" Margin="0,6,0,6">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Produit" Binding="{Binding Produit.Designation}" IsReadOnly="True" Width="*"/>
                         <DataGridTextColumn Header="Emplacement" Binding="{Binding Emplacement, Mode=OneWay}" IsReadOnly="True" Width="90"/>
@@ -69,7 +69,7 @@
                     <Button Content="Réceptionner" Command="{Binding PreparerReceptionCommand}" IsEnabled="{Binding PeutCreer}"/>
                     <Button Content="Annuler…" Command="{Binding AnnulerCommandeCommand}" IsEnabled="{Binding PeutAnnuler}"/>
                 </WrapPanel>
-                <DataGrid DockPanel.Dock="Bottom" ItemsSource="{Binding Commande.Lignes}" MaxHeight="130" Margin="0,6,0,0">
+                <DataGrid DockPanel.Dock="Bottom" ItemsSource="{Binding Commande.Lignes}" MinHeight="80" MaxHeight="130" Margin="0,6,0,0">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Produit" Binding="{Binding Produit}" Width="*"/>
                         <DataGridTextColumn Header="Commandé" Binding="{Binding Quantite, StringFormat=N2}" Width="90"/>
@@ -82,9 +82,9 @@
                         <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="120"/>
                         <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yy}" Width="75"/>
                         <DataGridTextColumn Header="Fournisseur" Binding="{Binding Fournisseur}" Width="*"/>
-                        <DataGridTextColumn Header="Destination" Binding="{Binding Destination}" Width="80"/>
+                        <DataGridTextColumn Header="Destination" Binding="{Binding Destination, Converter={StaticResource Libelle}}" Width="80"/>
                         <DataGridTextColumn Header="Total HT" Binding="{Binding TotalHt, StringFormat=N2}" Width="100"/>
-                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="80"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>
@@ -98,7 +98,7 @@
                 <Border DockPanel.Dock="Bottom" Style="{StaticResource Carte}" Margin="0,6,0,0" Visibility="{Binding PeutFacturer, Converter={StaticResource Visible}}">
                     <StackPanel>
                         <TextBlock Text="Facture fournisseur de la réception sélectionnée (quantités et prix de la facture papier)" FontWeight="SemiBold"/>
-                        <DataGrid ItemsSource="{Binding LignesFacture}" IsReadOnly="False" MaxHeight="120" Margin="0,4">
+                        <DataGrid ItemsSource="{Binding LignesFacture}" IsReadOnly="False" MinHeight="80" MaxHeight="120" Margin="0,4">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Produit" Binding="{Binding Produit.Designation}" IsReadOnly="True" Width="*"/>
                                 <DataGridTextColumn Header="Quantité facturée" Binding="{Binding QuantiteAcceptee, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
@@ -119,7 +119,7 @@
                         <DataGridTextColumn Header="Date" Binding="{Binding Horodatage, StringFormat=dd/MM/yy HH:mm}" Width="100"/>
                         <DataGridTextColumn Header="Fournisseur" Binding="{Binding Fournisseur}" Width="*"/>
                         <DataGridTextColumn Header="BL" Binding="{Binding NumeroBl}" Width="90"/>
-                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="80"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

@@ -51,7 +51,7 @@
             <TextBlock Text="Alertes" Style="{StaticResource SousTitre}"/>
             <DataGrid ItemsSource="{Binding Alertes}" MaxHeight="260">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Gravité" Binding="{Binding Gravite}" Width="90"/>
+                    <DataGridTextColumn Header="Gravité" Binding="{Binding Gravite, Converter={StaticResource Libelle}}" Width="90"/>
                     <DataGridTextColumn Header="Module" Binding="{Binding Module}" Width="110"/>
                     <DataGridTextColumn Header="Constat" Binding="{Binding Message}" Width="*"/>
                 </DataGrid.Columns>

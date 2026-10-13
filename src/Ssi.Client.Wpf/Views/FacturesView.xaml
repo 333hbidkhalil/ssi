@@ -34,12 +34,12 @@
                     <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="120"/>
                     <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yy}" Width="70"/>
                     <DataGridTextColumn Header="Tiers" Binding="{Binding Tiers}" Width="*"/>
-                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="60"/>
-                    <DataGridTextColumn Header="Origine" Binding="{Binding Origine}" Width="85"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource Libelle}}" Width="60"/>
+                    <DataGridTextColumn Header="Origine" Binding="{Binding Origine, Converter={StaticResource Libelle}}" Width="85"/>
                     <DataGridTextColumn Header="TTC" Binding="{Binding TotalTtc, StringFormat=N2}" Width="95"/>
                     <DataGridTextColumn Header="Reste dû" Binding="{Binding ResteDu, StringFormat=N2}" Width="95"/>
                     <DataGridTextColumn Header="Retard (j)" Binding="{Binding JoursRetard}" Width="65"/>
-                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="70"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="70"/>
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -54,7 +54,7 @@
                         <StackPanel>
                             <TextBlock FontSize="16" FontWeight="SemiBold"><Run Text="{Binding Detail.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Tiers, Mode=OneWay}"/></TextBlock>
                             <TextBlock Foreground="#57606A">
-                                <Run Text="{Binding Detail.Statut, Mode=OneWay}"/> · <Run Text="{Binding Detail.Etat, Mode=OneWay}"/> · échéance
+                                <Run Text="{Binding Detail.Statut, Mode=OneWay, Converter={StaticResource Libelle}}"/> · <Run Text="{Binding Detail.Etat, Mode=OneWay, Converter={StaticResource Libelle}}"/> · échéance
                                 <Run Text="{Binding Detail.Echeance, Mode=OneWay, StringFormat=dd/MM/yyyy}"/> · réf. tiers <Run Text="{Binding Detail.NumeroTiers, Mode=OneWay}"/>
                             </TextBlock>
                         </StackPanel>
@@ -108,12 +108,12 @@
                         <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="120"/>
                         <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=dd/MM/yy}" Width="75"/>
                         <DataGridTextColumn Header="Tiers" Binding="{Binding Tiers}" Width="*"/>
-                        <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="80"/>
+                        <DataGridTextColumn Header="Mode" Binding="{Binding Mode, Converter={StaticResource Libelle}}" Width="80"/>
                         <DataGridTextColumn Header="Compte" Binding="{Binding Compte}" Width="130"/>
                         <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
                         <DataGridTextColumn Header="Non affecté" Binding="{Binding NonAffecte, StringFormat=N2}" Width="90"/>
                         <DataGridTextColumn Header="Réf." Binding="{Binding Reference}" Width="100"/>
-                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="70"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="70"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>

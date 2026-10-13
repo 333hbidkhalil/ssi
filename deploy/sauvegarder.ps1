@@ -27,10 +27,20 @@ $verif = "ssi_verif_$horodatage".Replace("-", "_")
 New-Item -ItemType Directory -Force -Path $sortie | Out-Null
 
 function Journaliser([string]$statut, [string]$message) {
+    # Windows PowerShell 5.1 transforme la sortie d'erreur d'un programme redirigée (2>&1) en erreur bloquante si Stop.
+    $ErrorActionPreference = "Continue"
     $taille = 0; $sha = ""
     if (Test-Path $fichier) { $taille = (Get-Item $fichier).Length; $sha = (Get-FileHash -Algorithm SHA256 $fichier).Hash.ToLower() }
     $msg = $message.Replace("'", "''"); $f = $fichier.Replace("'", "''")
-    & $psql -X -q -d $Base -c "INSERT INTO sauvegardes (horodatage, fichier, taille, sha256, statut, message) VALUES (now(), '$f', $taille, NULLIF('$sha',''), '$statut', '$msg');" | Out-Null
+    $inscription = & $psql -X -q -d $Base -c "INSERT INTO sauvegardes (horodatage, fichier, taille, sha256, statut, message) VALUES (now(), '$f', $taille, NULLIF('$sha',''), '$statut', '$msg');" 2>&1
+    $inscrit = $LASTEXITCODE -eq 0
+    # Trace locale systématique : elle reste lisible même quand la base est injoignable (c'est alors la seule trace).
+    try {
+        $journal = Join-Path $sortie "sauvegardes.log"
+        $ligne = "$((Get-Date).ToString('yyyy-MM-dd HH:mm:ss')) $statut $fichier : $message"
+        if (-not $inscrit) { $ligne += " [NON INSCRIT EN BASE : $($inscription -join ' ')]" }
+        Add-Content -Encoding UTF8 -Path $journal -Value $ligne
+    } catch { }
     try {
         Write-EventLog -LogName Application -Source "SSI Sauvegarde" -EventId ($(if ($statut -eq "VERIFIEE") { 1000 } else { 1001 })) `
             -EntryType ($(if ($statut -eq "VERIFIEE") { "Information" } else { "Error" })) -Message "$statut : $message"
@@ -74,7 +84,9 @@ try {
 
 try {
     & $psql -X -q -d postgres -c "CREATE DATABASE $verif;" | Out-Null
+    $ErrorActionPreference = "Continue"   # 5.1 : la redirection 2> d'un programme ne doit pas interrompre le script ; seul le code de sortie compte
     & $pgrestore --no-owner --exit-on-error -d $verif $fichier 2> (Join-Path $sortie ".restauration.log")
+    $ErrorActionPreference = "Stop"
     if ($LASTEXITCODE -ne 0) { Echec "Restauration de vérification impossible : $(Get-Content -Raw (Join-Path $sortie '.restauration.log'))" 4 }
     $restauree = @(& $psql -X -q -A -t -d $verif -f $controles | Where-Object { $_ })
     $ecarts = Compare-Object $source $restauree

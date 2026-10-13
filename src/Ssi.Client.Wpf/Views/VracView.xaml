@@ -29,7 +29,7 @@
                     <DataGridTextColumn Header="Client" Binding="{Binding Client}" Width="*"/>
                     <DataGridTextColumn Header="Litres" Binding="{Binding Volume, StringFormat=N0}" Width="70"/>
                     <DataGridTextColumn Header="Livré" Binding="{Binding VolumeLivre, StringFormat=N0}" Width="70"/>
-                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="80"/>
                 </DataGrid.Columns>
             </DataGrid>
         </DockPanel>
@@ -45,7 +45,7 @@
                         </StackPanel>
                         <StackPanel>
                             <TextBlock FontSize="16" FontWeight="SemiBold">
-                                <Run Text="{Binding Detail.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Client, Mode=OneWay}"/> — <Run Text="{Binding Detail.Statut, Mode=OneWay}"/>
+                                <Run Text="{Binding Detail.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Client, Mode=OneWay}"/> — <Run Text="{Binding Detail.Statut, Mode=OneWay, Converter={StaticResource Libelle}}"/>
                             </TextBlock>
                             <TextBlock Foreground="#57606A">
                                 <Run Text="{Binding Detail.Produit, Mode=OneWay}"/> · <Run Text="{Binding Detail.Volume, Mode=OneWay, StringFormat=N0}"/> L à
@@ -97,7 +97,7 @@
                         <DataGridTextColumn Header="Fournisseur" Binding="{Binding Fournisseur}" Width="*"/>
                         <DataGridTextColumn Header="Total HT" Binding="{Binding TotalHt, StringFormat=N2}" Width="110"/>
                         <DataGridTextColumn Header="Frais prévus" Binding="{Binding FraisPrevusHt, StringFormat=N2}" Width="100"/>
-                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="80"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -133,7 +133,7 @@
                         <DataGridTextColumn Header="Écart %" Binding="{Binding EcartPct, StringFormat=N2}" Width="65"/>
                         <DataGridTextColumn Header="BL" Binding="{Binding NumeroBlFournisseur}" Width="80"/>
                         <DataGridTextColumn Header="Récep. client" Binding="{Binding NumeroReceptionClient}" Width="90"/>
-                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="75"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="75"/>
                         <DataGridCheckBoxColumn Header="Facturée" Binding="{Binding Facturee}" Width="65"/>
                         <DataGridTextColumn Header="Frais HT" Binding="{Binding FraisDirectsHt, StringFormat=N2}" Width="80"/>
                     </DataGrid.Columns>

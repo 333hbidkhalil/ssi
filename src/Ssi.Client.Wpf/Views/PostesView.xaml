@@ -17,7 +17,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Poste" Binding="{Binding Numero}" Width="*"/>
                     <DataGridTextColumn Header="Journée" Binding="{Binding JourneeExploitation, StringFormat=dd/MM}" Width="60"/>
-                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="70"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="70"/>
                     <DataGridTextColumn Header="Écart" Binding="{Binding Ecart, StringFormat=N2}" Width="80"/>
                 </DataGrid.Columns>
             </DataGrid>
@@ -36,7 +36,7 @@
                         </StackPanel>
                         <StackPanel>
                             <TextBlock FontSize="16" FontWeight="SemiBold">
-                                <Run Text="{Binding Detail.Poste.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Poste.Statut, Mode=OneWay}"/>
+                                <Run Text="{Binding Detail.Poste.Numero, Mode=OneWay}"/> — <Run Text="{Binding Detail.Poste.Statut, Mode=OneWay, Converter={StaticResource Libelle}}"/>
                             </TextBlock>
                             <TextBlock Foreground="#57606A">
                                 Ventes théoriques <Run Text="{Binding Detail.Rapport.MontantTheoriqueTtc, Mode=OneWay, StringFormat=N2}"/> DH ·
@@ -84,7 +84,7 @@
                         <DataGridTextColumn Header="Volume (L)" Binding="{Binding Volume, StringFormat=N3}" Width="90"/>
                         <DataGridTextColumn Header="Prix TTC" Binding="{Binding PrixUnitaireTtc, StringFormat=N2}" Width="70"/>
                         <DataGridTextColumn Header="Montant TTC" Binding="{Binding MontantTtc, StringFormat=N2}" Width="100"/>
-                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="*"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut, Converter={StaticResource Libelle}}" Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -107,7 +107,7 @@
                 </WrapPanel>
                 <DataGrid ItemsSource="{Binding Detail.Reglements}" SelectedItem="{Binding ReglementSelectionne}" MaxHeight="220">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="90"/>
+                        <DataGridTextColumn Header="Mode" Binding="{Binding Mode, Converter={StaticResource Libelle}}" Width="90"/>
                         <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="100"/>
                         <DataGridTextColumn Header="Client" Binding="{Binding Client}" Width="160"/>
                         <DataGridTextColumn Header="Litres" Binding="{Binding Volume, StringFormat=N2}" Width="80"/>
@@ -128,7 +128,7 @@
                     </DataGrid>
                     <DataGrid ItemsSource="{Binding Detail.Rapport.ParMode}" Width="260">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="*"/>
+                            <DataGridTextColumn Header="Mode" Binding="{Binding Mode, Converter={StaticResource Libelle}}" Width="*"/>
                             <DataGridTextColumn Header="Montant" Binding="{Binding Montant, StringFormat=N2}" Width="110"/>
                         </DataGrid.Columns>
                     </DataGrid>

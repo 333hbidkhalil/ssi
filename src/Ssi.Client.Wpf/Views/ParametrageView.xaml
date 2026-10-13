@@ -17,8 +17,8 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="90"/>
                             <DataGridTextColumn Header="Désignation" Binding="{Binding Designation}" Width="*"/>
-                            <DataGridTextColumn Header="Famille" Binding="{Binding Famille}" Width="110"/>
-                            <DataGridTextColumn Header="Taxe" Binding="{Binding Taxe}" Width="80"/>
+                            <DataGridTextColumn Header="Famille" Binding="{Binding Famille}" Width="150"/>
+                            <DataGridTextColumn Header="Taxe" Binding="{Binding Taxe}" Width="140"/>
                             <DataGridTextColumn Header="Prix TTC" Binding="{Binding PrixVenteTtc, StringFormat=N2}" Width="80"/>
                             <DataGridTextColumn Header="Achat HT réf." Binding="{Binding PrixAchatReferenceHt, StringFormat=N4}" Width="95"/>
                             <DataGridCheckBoxColumn Header="Actif" Binding="{Binding Actif}" Width="50"/>
@@ -58,7 +58,7 @@
                                 <Button Content="Enregistrer le prix…" Command="{Binding EnregistrerPrixCommand}" HorizontalAlignment="Left"/>
                                 <DataGrid ItemsSource="{Binding HistoriquePrix}" MaxHeight="200" Margin="0,8,0,0">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="80"/>
+                                        <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource Libelle}}" Width="80"/>
                                         <DataGridTextColumn Header="Prix" Binding="{Binding Prix, StringFormat=N4}" Width="75"/>
                                         <DataGridTextColumn Header="Début" Binding="{Binding Debut, StringFormat=dd/MM/yy HH:mm}" Width="100"/>
                                         <DataGridTextColumn Header="Fin" Binding="{Binding Fin, StringFormat=dd/MM/yy HH:mm}" Width="100"/>
@@ -163,7 +163,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="110"/>
                             <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
-                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="130"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource Libelle}}" Width="130"/>
                             <DataGridTextColumn Header="Banque" Binding="{Binding Banque}" Width="110"/>
                             <DataGridTextColumn Header="Solde" Binding="{Binding Solde, StringFormat=N2}" Width="110"/>
                         </DataGrid.Columns>

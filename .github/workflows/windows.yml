@@ -86,6 +86,17 @@ jobs:
           do { Start-Sleep 5; $t = Get-ScheduledTask -TaskName "SSI - Sauvegarde" } while ($t.State -eq "Running")
           $info = Get-ScheduledTaskInfo -TaskName "SSI - Sauvegarde"
           "Tâche planifiée : dernier résultat $($info.LastTaskResult)" | Tee-Object -Append $journal
+          Get-Content C:\SSI\Sauvegardes\sauvegardes.log -ErrorAction SilentlyContinue | Tee-Object -Append $journal
+          Get-WinEvent -FilterHashtable @{ LogName = "Application"; ProviderName = "SSI Sauvegarde" } -ErrorAction SilentlyContinue |
+            Format-List TimeCreated, LevelDisplayName, Message | Out-String | Tee-Object -Append $journal
+          if ($info.LastTaskResult -ne 0) {
+            # Diagnostic : même script, même rôle, même fichier pgpass, sous Windows PowerShell 5.1 mais avec le compte du poste.
+            "--- Relance de diagnostic sous Windows PowerShell 5.1" | Tee-Object -Append $journal
+            $env:PGPASSFILE = "C:\Windows\System32\config\systemprofile\AppData\Roaming\postgresql\pgpass.conf"
+            powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\SSI\Scripts\sauvegarder.ps1 -Dossier C:\SSI -PgBin $env:PGBIN *>&1 | Tee-Object -Append $journal
+            "Code de sortie : $LASTEXITCODE" | Tee-Object -Append $journal
+            Remove-Item Env:\PGPASSFILE
+          }
           $env:PGPASSWORD = "root"
           & "$env:PGBIN\psql.exe" -X -h 127.0.0.1 -U postgres -d ssi -c "SELECT horodatage, statut, fichier, taille, message FROM sauvegardes ORDER BY horodatage" | Tee-Object -Append $journal
           $dump = Get-ChildItem C:\SSI\Sauvegardes -Filter *.dump | Sort-Object LastWriteTime | Select-Object -Last 1
