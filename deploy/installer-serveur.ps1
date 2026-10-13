@@ -102,15 +102,24 @@ if (Get-NetFirewallRule -ErrorAction SilentlyContinue | Where-Object { $_.Enable
 }
 
 Etape "Vérification"
-# Le certificat vient d'être créé et n'est pas encore approuvé sur ce poste : vérification sans contrôle de certificat
-# (PowerShell 7 : -SkipCertificateCheck ; Windows PowerShell 5.1 : rappel de validation).
+# Le serveur approuve son propre certificat (comme le fera chaque poste avec installer-poste.ps1) : la vérification
+# passe par une validation TLS normale, sans rappel de contournement (peu fiable sous Windows PowerShell 5.1).
+Import-Certificate -FilePath (Join-Path $Dossier "Certificats\ssi-serveur.cer") -CertStoreLocation Cert:\LocalMachine\Root | Out-Null
+if ($PSVersionTable.PSVersion.Major -lt 6) {
+    $protocoles = [Net.SecurityProtocolType]::Tls12
+    if ([Enum]::GetNames([Net.SecurityProtocolType]) -contains "Tls13") { $protocoles = $protocoles -bor [Net.SecurityProtocolType]::Tls13 }
+    [Net.ServicePointManager]::SecurityProtocol = $protocoles
+}
 $appel = @{ UseBasicParsing = $true; TimeoutSec = 5; Uri = "https://localhost:$Port/health" }
-if ($PSVersionTable.PSVersion.Major -ge 6) { $appel.SkipCertificateCheck = $true }
-else { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; [Net.ServicePointManager]::ServerCertificateValidationCallback = { $true } }
 $ok = $false; $derniereErreur = ""
 for ($i = 0; $i -lt 30 -and -not $ok; $i++) {
     Start-Sleep -Seconds 2
-    try { $ok = (Invoke-WebRequest @appel).StatusCode -eq 200 } catch { $derniereErreur = $_.Exception.Message }
+    try { $ok = (Invoke-WebRequest @appel).StatusCode -eq 200 }
+    catch {
+        $e = $_.Exception; $messages = @()
+        while ($e) { $messages += $e.Message; $e = $e.InnerException }
+        $derniereErreur = $messages -join " / "
+    }
 }
 if (-not $ok) { throw "Le service ne répond pas ($derniereErreur) : consultez $Dossier\Logs et l'observateur d'événements." }
 
