@@ -37,8 +37,9 @@ $source = Join-Path $PSScriptRoot "publish\api"
 if (-not (Test-Path (Join-Path $source "Ssi.Api.exe"))) { throw "Publication de l'API absente : $source (voir l'aide du script)." }
 
 Etape "Base de données"
-$env:PGPASSWORD = Read-Host "Mot de passe du super-utilisateur PostgreSQL '$PgSuperUtilisateur'" -AsSecureString |
-    ForEach-Object { [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($_)) }
+# Mot de passe demandé à l'écran, sauf s'il est déjà fourni par PGPASSWORD (installation automatisée).
+if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Host "Mot de passe du super-utilisateur PostgreSQL '$PgSuperUtilisateur'" -AsSecureString |
+    ForEach-Object { [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($_)) } }
 $existe = & $psql -X -A -t -U $PgSuperUtilisateur -h 127.0.0.1 -d postgres -c "SELECT 1 FROM pg_database WHERE datname='ssi'"
 if ($existe -eq "1") { throw "La base 'ssi' existe déjà : installation interrompue (aucune donnée n'a été modifiée)." }
 $mdpApp = Secret 32

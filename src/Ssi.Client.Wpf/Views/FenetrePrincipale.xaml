@@ -27,7 +27,7 @@
                         <PasswordBox x:Name="Confirmation" Margin="0,2,0,14" Padding="4,3"/>
                         <Button Content="Changer le mot de passe" Style="{StaticResource Principal}" Click="Changer_Click" Margin="0"/>
                     </StackPanel>
-                    <TextBlock Text="{Binding Erreur}" Foreground="{StaticResource Danger}" TextWrapping="Wrap" Margin="0,12,0,0"
+                    <TextBlock AutomationProperties.AutomationId="ErreurConnexion" Text="{Binding Erreur}" Foreground="{StaticResource Danger}" TextWrapping="Wrap" Margin="0,12,0,0"
                                Visibility="{Binding Erreur, Converter={StaticResource SiTexte}}"/>
                     <TextBlock Text="{Binding Serveur, StringFormat=Serveur : {0}}" Foreground="#8C959F" FontSize="11" Margin="0,16,0,0"/>
                 </StackPanel>
@@ -66,7 +66,7 @@
             </Border>
             <Border DockPanel.Dock="Top" Background="{StaticResource DangerClair}" Padding="16,8"
                     Visibility="{Binding PageCourante.Erreur, Converter={StaticResource SiTexte}}">
-                <TextBlock Text="{Binding PageCourante.Erreur}" Foreground="{StaticResource Danger}" TextWrapping="Wrap"/>
+                <TextBlock AutomationProperties.AutomationId="BandeauErreur" Text="{Binding PageCourante.Erreur}" Foreground="{StaticResource Danger}" TextWrapping="Wrap"/>
             </Border>
             <Border DockPanel.Dock="Top" Background="{StaticResource SuccesClair}" Padding="16,8"
                     Visibility="{Binding PageCourante.Information, Converter={StaticResource SiTexte}}">

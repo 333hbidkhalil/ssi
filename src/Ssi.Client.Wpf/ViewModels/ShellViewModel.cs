@@ -23,12 +23,15 @@ public sealed partial class ShellViewModel : ViewModelBase
         new("Caisse", "", typeof(CaisseViewModel), [Droits.CaisseConsulter]),
         new("Ventes d'articles", "", typeof(VentesViewModel), [Droits.VentesConsulter]),
         new("Stocks et jaugeages", "", typeof(StocksViewModel), [Droits.StockConsulter]),
+        new("Achats et réceptions", "", typeof(AchatsViewModel), [Droits.AchatsConsulter]),
         new("Livraisons directes", "", typeof(VracViewModel), [Droits.VracConsulter]),
         new("Clients et fournisseurs", "", typeof(TiersViewModel), [Droits.ClientsConsulter, Droits.FournisseursConsulter]),
         new("Factures et règlements", "", typeof(FacturesViewModel), [Droits.FacturesConsulter]),
         new("Trésorerie", "", typeof(TresorerieViewModel), [Droits.BanqueConsulter]),
+        new("Personnel", "", typeof(PersonnelViewModel), [Droits.PersonnelConsulter]),
         new("Rentabilité", "", typeof(RentabiliteViewModel), [Droits.RentabiliteConsulter]),
         new("Rapports et exports", "", typeof(RapportsViewModel), [Droits.RapportsConsulter]),
+        new("Paramétrage station", "", typeof(ParametrageViewModel), [Droits.StationParametrer, Droits.CatalogueModifier, Droits.AdminParametres]),
         new("Administration", "", typeof(AdministrationViewModel), [Droits.AdminUtilisateurs, Droits.AdminParametres, Droits.AuditConsulter]),
     ];
 

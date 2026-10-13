@@ -84,6 +84,20 @@ public class ContratClientWpf(FabriqueApi api) : IClassFixture<FabriqueApi>
         Assert.NotNull(postes);
     }
 
+    [Fact(DisplayName = "Client WPF : chaque écran déclaré a son entrée dans le menu")]
+    public void ChaqueEcranAuMenu()
+    {
+        // Lecture des sources : le projet WPF (net10.0-windows) n'est pas référençable depuis ce projet de tests.
+        var racine = new DirectoryInfo(AppContext.BaseDirectory);
+        while (!File.Exists(Path.Combine(racine.FullName, "Ssi.slnx"))) racine = racine.Parent!;
+        var client = Path.Combine(racine.FullName, "src", "Ssi.Client.Wpf");
+        var ecrans = System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(Path.Combine(client, "App.xaml")), @"x:Type vm:(\w+ViewModel)")
+            .Select(m => m.Groups[1].Value).ToList();
+        var menu = File.ReadAllText(Path.Combine(client, "ViewModels", "ShellViewModel.cs"));
+        Assert.True(ecrans.Count >= 15, $"{ecrans.Count} écrans déclarés");
+        Assert.All(ecrans, e => Assert.Contains($"typeof({e})", menu));
+    }
+
     [Fact(DisplayName = "Client WPF : le menu n'affiche à un pompiste que les écrans qu'il peut ouvrir")]
     public async Task MenuSelonPermissions()
     {

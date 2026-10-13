@@ -1,0 +1,121 @@
+# Essai sur Windows : tests automatisés, puis installation réelle (scripts de deploy/), recette du client par un robot,
+# sauvegarde vérifiée et restauration. Les captures et le rapport sont publiés sur la branche « recette-windows ».
+name: Windows
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tests:
+    name: Tests automatisés (Windows)
+    runs-on: windows-latest
+    env:
+      SSI_TEST_PG: Host=localhost;Port=5432;Username=postgres;Password=root
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Démarrer PostgreSQL
+        shell: pwsh
+        run: |
+          Get-Service -Name postgresql* | Set-Service -Status Running -StartupType Automatic
+          & "$env:PGBIN\pg_isready.exe" -h localhost
+      - name: Tests (hors scénario de sauvegarde bash, couvert par l'installation)
+        run: dotnet test --filter "FullyQualifiedName!~ScenarioSauvegarde"
+
+  recette:
+    name: Installation et recette du client
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Écran 1920 × 1080
+        continue-on-error: true
+        shell: pwsh
+        run: Set-DisplayResolution -Width 1920 -Height 1080 -Force
+
+      - name: Démarrer PostgreSQL
+        shell: pwsh
+        run: |
+          Get-Service -Name postgresql* | Set-Service -Status Running -StartupType Automatic
+          & "$env:PGBIN\psql.exe" --version
+
+      - name: Publier l'API et le client
+        shell: pwsh
+        run: |
+          dotnet publish src/Ssi.Api -c Release -r win-x64 --self-contained -o deploy/publish/api
+          dotnet publish src/Ssi.Client.Wpf -c Release -r win-x64 --self-contained -o deploy/publish/client
+
+      - name: Installer le serveur (deploy/installer-serveur.ps1)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force recette | Out-Null
+          $env:PGPASSWORD = "root"
+          & ./deploy/installer-serveur.ps1 -PgBin $env:PGBIN *>&1 | Tee-Object -FilePath recette/installation-serveur.log
+          $mdp = (Select-String -Path recette/installation-serveur.log -Pattern "Compte initial : admin / (\S+)").Matches[0].Groups[1].Value
+          if (-not $mdp) { throw "Mot de passe initial introuvable dans la sortie de l'installation." }
+          "SSI_ADMIN=$mdp" >> $env:GITHUB_ENV
+          Get-Service SSIApi | Format-List Name, Status, StartType | Out-File -Append recette/installation-serveur.log
+          Get-NetFirewallRule -DisplayName "SSI API*" | Get-NetFirewallAddressFilter | Format-List | Out-File -Append recette/installation-serveur.log
+
+      - name: Installer le poste client (deploy/installer-poste.ps1)
+        shell: pwsh
+        run: |
+          & ./deploy/installer-poste.ps1 -Serveur localhost -Certificat C:\SSI\Certificats\ssi-serveur.cer *>&1 | Tee-Object -FilePath recette/installation-poste.log
+          Get-Content "C:\Program Files\SSI\appsettings.json" | Out-File -Append recette/installation-poste.log
+
+      - name: Recette du client par le robot
+        shell: pwsh
+        run: dotnet run --project tools/Ssi.RecetteWindows -c Release -- "C:\Program Files\SSI\Ssi.Client.Wpf.exe" https://localhost:5443 $env:SSI_ADMIN recette
+
+      - name: Sauvegarde vérifiée (tâche planifiée) puis restauration dans une nouvelle base
+        if: always()
+        shell: pwsh
+        run: |
+          $journal = "recette/sauvegarde-restauration.log"
+          Start-ScheduledTask -TaskName "SSI - Sauvegarde"
+          do { Start-Sleep 5; $t = Get-ScheduledTask -TaskName "SSI - Sauvegarde" } while ($t.State -eq "Running")
+          $info = Get-ScheduledTaskInfo -TaskName "SSI - Sauvegarde"
+          "Tâche planifiée : dernier résultat $($info.LastTaskResult)" | Tee-Object -Append $journal
+          $env:PGPASSWORD = "root"
+          & "$env:PGBIN\psql.exe" -X -h 127.0.0.1 -U postgres -d ssi -c "SELECT horodatage, statut, fichier, taille, message FROM sauvegardes ORDER BY horodatage" | Tee-Object -Append $journal
+          $dump = Get-ChildItem C:\SSI\Sauvegardes -Filter *.dump | Sort-Object LastWriteTime | Select-Object -Last 1
+          if (-not $dump) { throw "Aucun fichier de sauvegarde produit." }
+          & C:\SSI\Scripts\restaurer.ps1 -Fichier $dump.FullName -Cible ssi_essai_restauration -PgBin $env:PGBIN *>&1 | Tee-Object -Append $journal
+          if ($LASTEXITCODE) { throw "Restauration en échec ($LASTEXITCODE)" }
+          if ($info.LastTaskResult -ne 0) { throw "La sauvegarde planifiée a échoué ($($info.LastTaskResult))." }
+
+      - name: Rassembler les journaux
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force recette/journaux-serveur | Out-Null
+          Copy-Item C:\SSI\Logs\* recette/journaux-serveur -ErrorAction SilentlyContinue
+          "$(Get-Date -Format o) — commit $env:GITHUB_SHA — exécution $env:GITHUB_RUN_ID" | Out-File recette/LISEZMOI.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: recette-windows
+          path: recette
+
+      - name: Publier la recette sur la branche recette-windows
+        if: always()
+        shell: pwsh
+        run: |
+          Set-Location recette
+          git init -q -b recette-windows
+          git config user.name "SSI recette"
+          git config user.email "recette@ssi.invalid"
+          git add -A
+          git commit -q -m "Recette Windows du commit $env:GITHUB_SHA"
+          git push -q --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" recette-windows
