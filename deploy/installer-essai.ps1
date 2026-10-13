@@ -69,7 +69,7 @@ foreach ($exe in "initdb.exe", "pg_ctl.exe", "postgres.exe", "psql.exe") {
 }
 $donnees = Join-Path $Dossier "Base"
 $mdpPostgres = Secret 20
-$fichierMdp = Join-Path $env:TEMP "ssi-pg-$(Secret 8).txt"
+$fichierMdp = Join-Path $Dossier "initdb-$(Secret 8).tmp"   # pas dans %TEMP% (chemin court RUNNER~1 illisible pour initdb), supprimé aussitôt
 Set-Content -Encoding ASCII -NoNewline $fichierMdp $mdpPostgres
 try { Pg initdb.exe @("-D", $donnees, "-U", "postgres", "-E", "UTF8", "--auth-local=scram-sha-256", "--auth-host=scram-sha-256", "--pwfile=$fichierMdp") }
 finally { Remove-Item $fichierMdp -ErrorAction SilentlyContinue }
