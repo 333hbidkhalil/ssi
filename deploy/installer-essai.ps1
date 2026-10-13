@@ -74,7 +74,8 @@ Pg initdb.exe @("-D", $donnees, "-U", "postgres", "-E", "UTF8", "-A", "trust")  
 Add-Content -Encoding ASCII (Join-Path $donnees "postgresql.conf") "`nport = $portBase`nlisten_addresses = 'localhost'"
 # Service Windows dédié, sous le compte Service réseau (SID S-1-5-20 : nom indépendant de la langue de Windows).
 icacls $donnees /grant "*S-1-5-20:(OI)(CI)M" /T /Q | Out-Null
-Pg pg_ctl.exe @("register", "-N", $ServicePg, "-D", $donnees, "-S", "auto", "-U", "NT AUTHORITY\NetworkService", "-w")
+$serviceReseau = (New-Object System.Security.Principal.SecurityIdentifier "S-1-5-20").Translate([System.Security.Principal.NTAccount]).Value
+Pg pg_ctl.exe @("register", "-N", $ServicePg, "-D", $donnees, "-S", "auto", "-U", $serviceReseau, "-w")
 Start-Service $ServicePg
 $pret = $false
 for ($i = 0; $i -lt 30 -and -not $pret; $i++) {

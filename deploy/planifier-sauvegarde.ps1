@@ -18,7 +18,9 @@ $pgpass = Join-Path $Dossier "Certificats\pgpass.conf"
 "127.0.0.1:*:*:ssi_sauvegarde:$MotDePasse" | Set-Content -Encoding ASCII $pgpass
 $acl = New-Object System.Security.AccessControl.FileSecurity
 $acl.SetAccessRuleProtection($true, $false)
-foreach ($id in "BUILTIN\Administrators", "NT AUTHORITY\SYSTEM") {
+# Comptes désignés par leur SID (Administrateurs, Système) : les noms changent avec la langue de Windows.
+foreach ($sid in "S-1-5-32-544", "S-1-5-18") {
+    $id = New-Object System.Security.Principal.SecurityIdentifier $sid
     $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule($id, "FullControl", "Allow")))
 }
 Set-Acl $pgpass $acl
@@ -30,6 +32,6 @@ if ($CopieExterne) { $arguments += " -CopieExterne `"$CopieExterne`"" }
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $arguments
 $declencheur = New-ScheduledTaskTrigger -Daily -At $Heure
 $reglages = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2) -RestartCount 2 -RestartInterval (New-TimeSpan -Minutes 30)
-Register-ScheduledTask -TaskName "SSI - Sauvegarde" -Action $action -Trigger $declencheur -Settings $reglages -User "SYSTEM" -RunLevel Highest -Force | Out-Null
+Register-ScheduledTask -TaskName "SSI - Sauvegarde" -Action $action -Trigger $declencheur -Settings $reglages -User ((New-Object System.Security.Principal.SecurityIdentifier "S-1-5-18").Translate([System.Security.Principal.NTAccount]).Value) -RunLevel Highest -Force | Out-Null
 Write-Host "Sauvegarde vérifiée planifiée chaque jour à $Heure. Résultats : table « sauvegardes » (écran Administration) et journal Application."
 Write-Host "Recommandation : ajoutez -CopieExterne vers un disque externe ou un autre poste ; une sauvegarde sur le seul serveur ne protège pas contre sa perte."

@@ -85,7 +85,9 @@ $config | ConvertTo-Json -Depth 6 | Set-Content -Encoding UTF8 $fichierConfig
 # Le fichier contient des secrets : accès réservé aux administrateurs et au compte du service.
 $acl = New-Object System.Security.AccessControl.FileSecurity
 $acl.SetAccessRuleProtection($true, $false)
-foreach ($id in "BUILTIN\Administrators", "NT AUTHORITY\SYSTEM") {
+# Comptes désignés par leur SID (Administrateurs, Système) : les noms changent avec la langue de Windows.
+foreach ($sid in "S-1-5-32-544", "S-1-5-18") {
+    $id = New-Object System.Security.Principal.SecurityIdentifier $sid
     $acl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule($id, "FullControl", "Allow")))
 }
 Set-Acl $fichierConfig $acl
