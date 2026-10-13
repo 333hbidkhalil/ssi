@@ -104,6 +104,8 @@ jobs:
           & C:\SSI\Scripts\restaurer.ps1 -Fichier $dump.FullName -Cible ssi_essai_restauration -PgBin $env:PGBIN *>&1 | Tee-Object -Append $journal
           if ($LASTEXITCODE) { throw "Restauration en échec ($LASTEXITCODE)" }
           if ($info.LastTaskResult -ne 0) { throw "La sauvegarde planifiée a échoué ($($info.LastTaskResult))." }
+          $verifiees = & "$env:PGBIN\psql.exe" -X -A -t -h 127.0.0.1 -U postgres -d ssi -c "SELECT count(*) FROM sauvegardes WHERE statut = 'VERIFIEE'"
+          if ([int]$verifiees -lt 1) { throw "La sauvegarde n'est pas inscrite comme vérifiée : l'alerte du tableau de bord resterait active." }
 
       - name: Rassembler les journaux
         if: always()

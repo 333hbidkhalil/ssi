@@ -36,8 +36,15 @@ function Journaliser([string]$statut, [string]$message) {
     $taille = 0; $sha = ""
     if (Test-Path $fichier) { $taille = (Get-Item $fichier).Length; $sha = (Get-FileHash -Algorithm SHA256 $fichier).Hash.ToLower() }
     $msg = $message.Replace("'", "''"); $f = $fichier.Replace("'", "''")
-    $inscription = & $psql -X -q -d $Base -c "INSERT INTO sauvegardes (horodatage, fichier, taille, sha256, statut, message) VALUES (now(), '$f', $taille, NULLIF('$sha',''), '$statut', '$msg');" 2>&1
+    # Requête passée par un fichier UTF-8 sans BOM : sous Windows PowerShell 5.1, un argument -c accentué est transmis
+    # dans le code page ANSI et refusé par le serveur (« invalid byte sequence for encoding UTF8 »).
+    $requete = [IO.Path]::GetTempFileName()
+    [IO.File]::WriteAllText($requete, "INSERT INTO sauvegardes (horodatage, fichier, taille, sha256, statut, message) VALUES (now(), '$f', $taille, NULLIF('$sha',''), '$statut', '$msg');", (New-Object Text.UTF8Encoding $false))
+    $encodage = $env:PGCLIENTENCODING; $env:PGCLIENTENCODING = "UTF8"
+    $inscription = & $psql -X -q -v ON_ERROR_STOP=1 -d $Base -f $requete 2>&1
     $inscrit = $LASTEXITCODE -eq 0
+    $env:PGCLIENTENCODING = $encodage
+    Remove-Item $requete -ErrorAction SilentlyContinue
     # Trace locale systématique : elle reste lisible même quand la base est injoignable (c'est alors la seule trace).
     try {
         $journal = Join-Path $sortie "sauvegardes.log"
