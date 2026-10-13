@@ -96,13 +96,17 @@ if (Get-NetFirewallRule -ErrorAction SilentlyContinue | Where-Object { $_.Enable
 }
 
 Etape "Vérification"
-[Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
-$ok = $false
+# Le certificat vient d'être créé et n'est pas encore approuvé sur ce poste : vérification sans contrôle de certificat
+# (PowerShell 7 : -SkipCertificateCheck ; Windows PowerShell 5.1 : rappel de validation).
+$appel = @{ UseBasicParsing = $true; TimeoutSec = 5; Uri = "https://localhost:$Port/health" }
+if ($PSVersionTable.PSVersion.Major -ge 6) { $appel.SkipCertificateCheck = $true }
+else { [Net.ServicePointManager]::ServerCertificateValidationCallback = { $true } }
+$ok = $false; $derniereErreur = ""
 for ($i = 0; $i -lt 30 -and -not $ok; $i++) {
     Start-Sleep -Seconds 2
-    try { $ok = (Invoke-WebRequest -UseBasicParsing "https://localhost:$Port/health" -TimeoutSec 5).StatusCode -eq 200 } catch { }
+    try { $ok = (Invoke-WebRequest @appel).StatusCode -eq 200 } catch { $derniereErreur = $_.Exception.Message }
 }
-if (-not $ok) { throw "Le service ne répond pas : consultez $Dossier\Logs et l'observateur d'événements." }
+if (-not $ok) { throw "Le service ne répond pas ($derniereErreur) : consultez $Dossier\Logs et l'observateur d'événements." }
 
 Etape "Sauvegarde quotidienne vérifiée"
 # Rôle dédié : lecture de toutes les données, création de la base temporaire de vérification, inscription du résultat.
