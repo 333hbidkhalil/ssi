@@ -69,10 +69,7 @@ foreach ($exe in "initdb.exe", "pg_ctl.exe", "postgres.exe", "psql.exe") {
 }
 $donnees = Join-Path $Dossier "Base"
 $mdpPostgres = Secret 20
-$fichierMdp = Join-Path $Dossier "initdb-$(Secret 8).tmp"   # pas dans %TEMP% (chemin court RUNNER~1 illisible pour initdb), supprimé aussitôt
-Set-Content -Encoding ASCII -NoNewline $fichierMdp $mdpPostgres
-try { Pg initdb.exe @("-D", $donnees, "-U", "postgres", "-E", "UTF8", "--auth-local=scram-sha-256", "--auth-host=scram-sha-256", "--pwfile=$fichierMdp") }
-finally { Remove-Item $fichierMdp -ErrorAction SilentlyContinue }
+Pg initdb.exe @("-D", $donnees, "-U", "postgres", "-E", "UTF8", "-A", "trust")   # mot de passe fixé ci-dessous, puis accès par mot de passe seulement
 # Base accessible depuis ce seul ordinateur, sur le port libre choisi.
 Add-Content -Encoding ASCII (Join-Path $donnees "postgresql.conf") "`nport = $portBase`nlisten_addresses = 'localhost'"
 # Service Windows dédié, sous le compte Service réseau (SID S-1-5-20 : nom indépendant de la langue de Windows).
@@ -86,8 +83,21 @@ for ($i = 0; $i -lt 30 -and -not $pret; $i++) {
     $pret = $LASTEXITCODE -eq 0
 }
 if (-not $pret) { throw "La base SSI ne démarre pas : voir $donnees\log et l'observateur d'événements." }
-Write-Host "Base SSI démarrée (service « $ServicePg », port $portBase, accès local uniquement)."
+# Mot de passe du super-utilisateur, puis authentification obligatoire (connexions locales uniquement).
+Pg psql.exe @("-X", "-q", "-v", "ON_ERROR_STOP=1", "-h", "127.0.0.1", "-p", "$portBase", "-U", "postgres", "-d", "postgres", "-c", "ALTER ROLE postgres PASSWORD '$mdpPostgres';")
+"host all all 127.0.0.1/32 scram-sha-256`r`nhost all all ::1/128 scram-sha-256" | Set-Content -Encoding ASCII (Join-Path $donnees "pg_hba.conf")
+Restart-Service $ServicePg
 $env:PGPASSWORD = $mdpPostgres
+$pret = $false
+for ($i = 0; $i -lt 30 -and -not $pret; $i++) {
+    Start-Sleep -Seconds 1
+    $ErrorActionPreference = "Continue"   # message d'attente de psql sur la sortie d'erreur : seul le code compte
+    & (Join-Path $PgBin "psql.exe") -X -A -t -h 127.0.0.1 -p $portBase -U postgres -d postgres -c "SELECT 1" 2>&1 | Out-Null
+    $pret = $LASTEXITCODE -eq 0
+    $ErrorActionPreference = "Stop"
+}
+if (-not $pret) { throw "La base SSI ne répond pas avec son mot de passe : voir l'observateur d'événements." }
+Write-Host "Base SSI démarrée (service « $ServicePg », port $portBase, accès local uniquement, par mot de passe)."
 
 Etape "Serveur SSI"
 & (Join-Path $PSScriptRoot "installer-serveur.ps1") -Dossier $Dossier -PgBin $PgBin -PortBase $portBase -Port $portApi -NomServeur localhost *>&1 | Tee-Object -Variable journal
