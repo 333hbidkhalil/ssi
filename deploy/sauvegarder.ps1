@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Sauvegarde SSI vérifiée (Windows). Même logique que sauvegarder.sh :
   dump dans un instantané exporté, totaux de contrôle de la source dans le même instantané, restauration complète dans une base
@@ -17,6 +17,10 @@ param(
 $ErrorActionPreference = "Stop"
 if (-not $env:PGHOST) { $env:PGHOST = "127.0.0.1" }
 $env:PGUSER = $Utilisateur
+# Authentification par le fichier pgpass du compte (planifier-sauvegarde.ps1) : un PGPASSWORD hérité de l'environnement
+# (variable système d'un autre logiciel) aurait priorité sur lui et ferait échouer la connexion du rôle de sauvegarde.
+$pgpass = if ($env:PGPASSFILE) { $env:PGPASSFILE } elseif ($env:APPDATA) { Join-Path $env:APPDATA "postgresql\pgpass.conf" } else { "" }
+if ($pgpass -and (Test-Path $pgpass)) { Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue }
 $ext = if ($IsLinux -or $IsMacOS) { "" } else { ".exe" }   # PowerShell 7 sous Linux : utilisé pour les tests
 $psql = Join-Path $PgBin "psql$ext"; $pgdump = Join-Path $PgBin "pg_dump$ext"; $pgrestore = Join-Path $PgBin "pg_restore$ext"
 $sortie = if ($env:SSI_DOSSIER_SAUVEGARDES) { $env:SSI_DOSSIER_SAUVEGARDES } else { Join-Path $Dossier "Sauvegardes" }

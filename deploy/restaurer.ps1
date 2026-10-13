@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
   Restaure une sauvegarde SSI dans une NOUVELLE base (jamais par-dessus la base en service), vérifie l'empreinte SHA-256 et les

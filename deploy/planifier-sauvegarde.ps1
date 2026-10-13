@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
   Planifie la sauvegarde quotidienne vérifiée (tâche « SSI - Sauvegarde », compte SYSTEM) et enregistre les identifiants

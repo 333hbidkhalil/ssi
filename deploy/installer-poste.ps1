@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
   Prépare un poste client SSI : approuve le certificat du serveur, copie le client WPF et règle l'adresse du serveur.

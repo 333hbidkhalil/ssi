@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
   Installe le serveur SSI (API + base PostgreSQL) sur le poste serveur Windows du réseau local de la station.
@@ -32,6 +32,11 @@ function Secret([int]$n) {
 }
 
 $psql = Join-Path $PgBin "psql.exe"
+# Exécute une commande SQL en super-utilisateur ; arrêt immédiat si elle échoue (rien ne doit être tenu pour fait à tort).
+function Sql([string]$base, [string]$commande) {
+    & $psql -X -q -v ON_ERROR_STOP=1 -U $PgSuperUtilisateur -h 127.0.0.1 -d $base -c $commande | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Commande SQL en échec sur la base '$base' (code $LASTEXITCODE) : installation interrompue." }
+}
 if (-not (Test-Path $psql)) { throw "psql.exe introuvable dans $PgBin : installez PostgreSQL 16 ou indiquez -PgBin." }
 $source = Join-Path $PSScriptRoot "publish\api"
 if (-not (Test-Path (Join-Path $source "Ssi.Api.exe"))) { throw "Publication de l'API absente : $source (voir l'aide du script)." }
@@ -43,9 +48,9 @@ if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Host "Mot de passe du super-u
 $existe = & $psql -X -A -t -U $PgSuperUtilisateur -h 127.0.0.1 -d postgres -c "SELECT 1 FROM pg_database WHERE datname='ssi'"
 if ($existe -eq "1") { throw "La base 'ssi' existe déjà : installation interrompue (aucune donnée n'a été modifiée)." }
 $mdpApp = Secret 32
-& $psql -X -v ON_ERROR_STOP=1 -U $PgSuperUtilisateur -h 127.0.0.1 -d postgres -c "CREATE ROLE ssi_app LOGIN PASSWORD '$mdpApp';" | Out-Null
-& $psql -X -v ON_ERROR_STOP=1 -U $PgSuperUtilisateur -h 127.0.0.1 -d postgres -c "CREATE DATABASE ssi OWNER ssi_app ENCODING 'UTF8' TEMPLATE template0;" | Out-Null
-& $psql -X -v ON_ERROR_STOP=1 -U $PgSuperUtilisateur -h 127.0.0.1 -d ssi -c "CREATE EXTENSION IF NOT EXISTS btree_gist;" | Out-Null
+Sql postgres "CREATE ROLE ssi_app LOGIN PASSWORD '$mdpApp';"
+Sql postgres "CREATE DATABASE ssi OWNER ssi_app ENCODING 'UTF8' TEMPLATE template0;"
+Sql ssi "CREATE EXTENSION IF NOT EXISTS btree_gist;"
 
 Etape "Fichiers de l'application"
 foreach ($d in "Api", "Certificats", "Sauvegardes", "Logs", "Scripts") { New-Item -ItemType Directory -Force -Path (Join-Path $Dossier $d) | Out-Null }
@@ -111,7 +116,7 @@ if (-not $ok) { throw "Le service ne répond pas ($derniereErreur) : consultez $
 Etape "Sauvegarde quotidienne vérifiée"
 # Rôle dédié : lecture de toutes les données, création de la base temporaire de vérification, inscription du résultat.
 $mdpSauvegarde = Secret 32
-& $psql -X -v ON_ERROR_STOP=1 -U $PgSuperUtilisateur -h 127.0.0.1 -d ssi -c "CREATE ROLE ssi_sauvegarde LOGIN CREATEDB PASSWORD '$mdpSauvegarde' IN ROLE pg_read_all_data; GRANT INSERT ON sauvegardes TO ssi_sauvegarde;" | Out-Null
+Sql ssi "CREATE ROLE ssi_sauvegarde LOGIN CREATEDB PASSWORD '$mdpSauvegarde' IN ROLE pg_read_all_data; GRANT INSERT ON sauvegardes TO ssi_sauvegarde;"
 & (Join-Path $Dossier "Scripts\planifier-sauvegarde.ps1") -Dossier $Dossier -PgBin $PgBin -Heure $HeureSauvegarde -MotDePasse $mdpSauvegarde
 Remove-Item Env:\PGPASSWORD
 
