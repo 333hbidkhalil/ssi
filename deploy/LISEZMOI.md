@@ -1,8 +1,18 @@
 # SSI — Installation, sauvegarde et restauration (Windows, réseau local)
 
-Ce guide s'adresse à la personne qui installe SSI dans la station. Les scripts n'ouvrent **aucun accès depuis Internet** : l'API n'écoute que le sous-réseau local et PostgreSQL n'est joignable que depuis le serveur.
+Ce guide s'adresse à la personne qui installe SSI dans la station. Les ports sont réglables (`-Port`, `-PortBase`) si un autre logiciel occupe 5443 ou 5432. Les scripts n'ouvrent **aucun accès depuis Internet** : l'API n'écoute que le sous-réseau local et PostgreSQL n'est joignable que depuis le serveur.
 
 > **Statut des scripts.** Tous les scripts de ce dossier sont exécutés sur Windows Server à chaque envoi de code (chaîne `.github/workflows/windows.yml`, compte rendu dans `docs/recette-windows.md`) : installation du serveur et d'un poste, service, pare-feu, certificat, tâche planifiée, sauvegarde VERIFIEE avec 21 totaux identiques, restauration dans une nouvelle base. La première installation sur le matériel de la station reste à faire en suivant la recette du § 6.
+
+## 0. Essai sur un seul ordinateur (découverte du logiciel)
+
+Double-cliquez sur **`Installer-SSI-essai.cmd`** et acceptez la demande d'autorisation de Windows. Le script installe tout sur ce poste **à côté des logiciels existants, sans les modifier** :
+
+- une base PostgreSQL **propre à SSI** (service « SSI-PostgreSQL », dossier `C:\SSI\Base`, accessible depuis ce seul poste), avec des binaires PostgreSQL 16 téléchargés dans `C:\SSI\PostgreSQL` ; un PostgreSQL déjà présent n'est ni utilisé ni modifié ;
+- le serveur et le client SSI, sur les premiers ports libres (5432 et 5443 par défaut ; par exemple 5433 et 5444 si un autre logiciel les occupe déjà) ;
+- les identifiants dans « SSI - identifiants d'essai.txt » sur le bureau.
+
+Pour tout retirer : **`Desinstaller-SSI-essai.cmd`** (confirmation demandée ; efface la base et les sauvegardes de l'essai, rien d'autre).
 
 ## 1. Préparer les fichiers (poste de développement)
 

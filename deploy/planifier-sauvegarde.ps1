@@ -2,7 +2,7 @@
 <#
 .SYNOPSIS
   Planifie la sauvegarde quotidienne vérifiée (tâche « SSI - Sauvegarde », compte SYSTEM) et enregistre les identifiants
-  du rôle ssi_sauvegarde dans le pgpass.conf du compte SYSTEM (accès réservé à SYSTEM et aux administrateurs).
+  du rôle ssi_sauvegarde dans C:\SSI\Certificats\pgpass.conf (accès réservé à SYSTEM et aux administrateurs).
 #>
 param(
     [string]$Dossier = "C:\SSI",
@@ -12,11 +12,10 @@ param(
     [string]$CopieExterne = ""
 )
 $ErrorActionPreference = "Stop"
-$pgpassDossier = "C:\Windows\System32\config\systemprofile\AppData\Roaming\postgresql"
-New-Item -ItemType Directory -Force -Path $pgpassDossier | Out-Null
-$pgpass = Join-Path $pgpassDossier "pgpass.conf"
-# Une ligne pour la base SSI, une pour la base « postgres » (création/suppression de la base temporaire de vérification)
-"127.0.0.1:5432:*:ssi_sauvegarde:$MotDePasse" | Set-Content -Encoding ASCII $pgpass
+# Fichier pgpass propre à SSI (et non celui du compte SYSTEM, que d'autres logiciels peuvent utiliser) ; tous ports,
+# toutes bases : base SSI et base « postgres » (création/suppression de la base temporaire de vérification).
+$pgpass = Join-Path $Dossier "Certificats\pgpass.conf"
+"127.0.0.1:*:*:ssi_sauvegarde:$MotDePasse" | Set-Content -Encoding ASCII $pgpass
 $acl = New-Object System.Security.AccessControl.FileSecurity
 $acl.SetAccessRuleProtection($true, $false)
 foreach ($id in "BUILTIN\Administrators", "NT AUTHORITY\SYSTEM") {

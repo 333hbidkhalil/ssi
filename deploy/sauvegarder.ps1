@@ -4,7 +4,8 @@
   dump dans un instantané exporté, totaux de contrôle de la source dans le même instantané, restauration complète dans une base
   temporaire, comparaison, empreinte SHA-256, inscription dans la table « sauvegardes », copie externe facultative, rotation.
   Le résultat n'est « VERIFIEE » que si la restauration et la comparaison réussissent ; sinon code de sortie non nul.
-  Authentification : fichier pgpass.conf du compte qui exécute la tâche (créé par planifier-sauvegarde.ps1).
+  Authentification : fichier <Dossier>\Certificats\pgpass.conf (créé par planifier-sauvegarde.ps1).
+  Port PostgreSQL : -PortBase, sinon celui de la chaîne de connexion de l'API, sinon PGPORT ou 5432.
 #>
 param(
     [string]$Dossier = "C:\SSI",
@@ -12,13 +13,19 @@ param(
     [string]$Base = "ssi",
     [string]$Utilisateur = "ssi_sauvegarde",
     [int]$Conservation = 30,
-    [string]$CopieExterne = ""   # ex. un disque USB ou un partage : E:\SSI-Sauvegardes
+    [string]$CopieExterne = "",   # ex. un disque USB ou un partage : E:\SSI-Sauvegardes
+    [int]$PortBase = 0
 )
 $ErrorActionPreference = "Stop"
 if (-not $env:PGHOST) { $env:PGHOST = "127.0.0.1" }
 $env:PGUSER = $Utilisateur
+$configApi = Join-Path $Dossier "Api\appsettings.Production.json"
+if (-not $PortBase -and (Test-Path $configApi) -and ((Get-Content -Raw $configApi) -match "Port=(\d+)")) { $PortBase = [int]$Matches[1] }
+if ($PortBase) { $env:PGPORT = "$PortBase" }
 # Authentification par le fichier pgpass du compte (planifier-sauvegarde.ps1) : un PGPASSWORD hérité de l'environnement
 # (variable système d'un autre logiciel) aurait priorité sur lui et ferait échouer la connexion du rôle de sauvegarde.
+$pgpassSsi = Join-Path $Dossier "Certificats\pgpass.conf"
+if (-not $env:PGPASSFILE -and (Test-Path $pgpassSsi)) { $env:PGPASSFILE = $pgpassSsi }
 $pgpass = if ($env:PGPASSFILE) { $env:PGPASSFILE } elseif ($env:APPDATA) { Join-Path $env:APPDATA "postgresql\pgpass.conf" } else { "" }
 if ($pgpass -and (Test-Path $pgpass)) { Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue }
 $ext = if ($IsLinux -or $IsMacOS) { "" } else { ".exe" }   # PowerShell 7 sous Linux : utilisé pour les tests

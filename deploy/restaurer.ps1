@@ -13,7 +13,8 @@ param(
     [string]$Dossier = "C:\SSI",
     [string]$PgBin = "C:\Program Files\PostgreSQL\16\bin",
     [string]$PgSuperUtilisateur = "postgres",
-    [switch]$Basculer
+    [switch]$Basculer,
+    [int]$PortBase = 0   # par défaut : celui de la chaîne de connexion de l'API
 )
 $ErrorActionPreference = "Stop"
 $ext = if ($IsLinux -or $IsMacOS) { "" } else { ".exe" }
@@ -21,6 +22,9 @@ $psql = Join-Path $PgBin "psql$ext"; $pgrestore = Join-Path $PgBin "pg_restore$e
 $controles = Join-Path $PSScriptRoot "controles.sql"
 if (-not $env:PGHOST) { $env:PGHOST = "127.0.0.1" }
 $env:PGUSER = $PgSuperUtilisateur
+$configApi = Join-Path $Dossier "Api\appsettings.Production.json"
+if (-not $PortBase -and (Test-Path $configApi) -and ((Get-Content -Raw $configApi) -match "Port=(\d+)")) { $PortBase = [int]$Matches[1] }
+if ($PortBase) { $env:PGPORT = "$PortBase" }
 
 if (Test-Path "$Fichier.sha256") {
     if ((Get-FileHash -Algorithm SHA256 $Fichier).Hash.ToLower() -ne (Get-Content -Raw "$Fichier.sha256").Trim()) {

@@ -20,6 +20,7 @@ param(
     [string]$PgBin = "C:\Program Files\PostgreSQL\16\bin",
     [string]$PgSuperUtilisateur = "postgres",
     [int]$Port = 5443,
+    [int]$PortBase = 5432,   # port du serveur PostgreSQL qui accueille la base « ssi »
     [string]$NomServeur = $env:COMPUTERNAME,
     [string]$HeureSauvegarde = "23:30"
 )
@@ -35,18 +36,22 @@ $psql = Join-Path $PgBin "psql.exe"
 # Exécute une commande SQL en super-utilisateur ; arrêt immédiat si elle échoue (rien ne doit être tenu pour fait à tort).
 function Sql([string]$base, [string]$commande) {
     $ErrorActionPreference = "Continue"   # Windows PowerShell 5.1 : un NOTICE de psql sur la sortie d'erreur ne doit pas interrompre ; seul le code de sortie compte
-    & $psql -X -q -v ON_ERROR_STOP=1 -U $PgSuperUtilisateur -h 127.0.0.1 -d $base -c $commande | Out-Null
+    & $psql -X -q -v ON_ERROR_STOP=1 -U $PgSuperUtilisateur -h 127.0.0.1 -p $PortBase -d $base -c $commande | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "Commande SQL en échec sur la base '$base' (code $LASTEXITCODE) : installation interrompue." }
 }
 if (-not (Test-Path $psql)) { throw "psql.exe introuvable dans $PgBin : installez PostgreSQL 16 ou indiquez -PgBin." }
 $source = Join-Path $PSScriptRoot "publish\api"
 if (-not (Test-Path (Join-Path $source "Ssi.Api.exe"))) { throw "Publication de l'API absente : $source (voir l'aide du script)." }
+# Port HTTPS déjà pris par un autre logiciel : arrêt avant toute modification (choisir un autre port avec -Port).
+if (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue) {
+    throw "Le port $Port est déjà utilisé par un autre logiciel : relancez avec -Port <port libre> (rien n'a été modifié)."
+}
 
 Etape "Base de données"
 # Mot de passe demandé à l'écran, sauf s'il est déjà fourni par PGPASSWORD (installation automatisée).
 if (-not $env:PGPASSWORD) { $env:PGPASSWORD = Read-Host "Mot de passe du super-utilisateur PostgreSQL '$PgSuperUtilisateur'" -AsSecureString |
     ForEach-Object { [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($_)) } }
-$existe = & $psql -X -A -t -U $PgSuperUtilisateur -h 127.0.0.1 -d postgres -c "SELECT 1 FROM pg_database WHERE datname='ssi'"
+$existe = & $psql -X -A -t -U $PgSuperUtilisateur -h 127.0.0.1 -p $PortBase -d postgres -c "SELECT 1 FROM pg_database WHERE datname='ssi'"
 if ($existe -eq "1") { throw "La base 'ssi' existe déjà : installation interrompue (aucune donnée n'a été modifiée)." }
 $mdpApp = Secret 32
 Sql postgres "CREATE ROLE ssi_app LOGIN PASSWORD '$mdpApp';"
@@ -70,7 +75,7 @@ Export-Certificate -Cert $cert -FilePath (Join-Path $Dossier "Certificats\ssi-se
 Etape "Configuration"
 $mdpAdmin = Secret 12
 $config = [ordered]@{
-    ConnectionStrings = @{ Ssi = "Host=127.0.0.1;Port=5432;Database=ssi;Username=ssi_app;Password=$mdpApp;Timeout=15;Command Timeout=60" }
+    ConnectionStrings = @{ Ssi = "Host=127.0.0.1;Port=$PortBase;Database=ssi;Username=ssi_app;Password=$mdpApp;Timeout=15;Command Timeout=60" }
     Jwt = @{ Cle = (Secret 64); Emetteur = "SSI"; DureeHeures = 8 }
     Ssi = @{ MotDePasseAdminInitial = $mdpAdmin; DossierLogs = (Join-Path $Dossier "Logs"); DossierSauvegardes = (Join-Path $Dossier "Sauvegardes") }
     Kestrel = @{ Endpoints = @{ Https = @{ Url = "https://0.0.0.0:$Port"; Certificate = @{ Path = $pfx; Password = $mdpPfx } } } }
@@ -97,8 +102,8 @@ Etape "Pare-feu (réseau local uniquement)"
 New-NetFirewallRule -DisplayName "SSI API (réseau local)" -Direction Inbound -Protocol TCP -LocalPort $Port `
     -RemoteAddress LocalSubnet -Profile Domain, Private -Action Allow | Out-Null
 if (Get-NetFirewallRule -ErrorAction SilentlyContinue | Where-Object { $_.Enabled -eq "True" -and $_.Direction -eq "Inbound" } |
-    Get-NetFirewallPortFilter | Where-Object { $_.LocalPort -eq 5432 }) {
-    Write-Warning "Une règle de pare-feu ouvre le port PostgreSQL 5432 : supprimez-la, la base ne doit être accessible que depuis le serveur."
+    Get-NetFirewallPortFilter | Where-Object { $_.LocalPort -eq $PortBase }) {
+    Write-Warning "Une règle de pare-feu ouvre le port PostgreSQL $PortBase : supprimez-la, la base ne doit être accessible que depuis le serveur."
 }
 
 Etape "Vérification"
