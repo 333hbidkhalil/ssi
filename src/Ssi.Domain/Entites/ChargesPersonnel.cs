@@ -51,6 +51,8 @@ public class Charge : Document
     public DateOnly Echeance { get; set; }
     public string? Description { get; set; }
     public string? ReferencePiece { get; set; }
+    /// <summary>Charge payée en espèces sur la recette de ce poste : réglée par la caisse à la validation du poste.</summary>
+    public Guid? PosteId { get; set; }
     public StatutDocument Statut { get; set; } = StatutDocument.Valide;
 }
 

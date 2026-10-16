@@ -1,0 +1,224 @@
+<UserControl x:Class="Ssi.Client.Wpf.Views.SaisieJourneeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Même disposition que le tableau de saisie de l'exploitant : Production, Clients, Charges, Solde de la période. -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <Border Style="{StaticResource Carte}">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="Enregistrer la journée" Style="{StaticResource Principal}" Command="{Binding EnregistrerCommand}"
+                                IsEnabled="{Binding Modifiable}" AutomationProperties.AutomationId="EnregistrerJournee"/>
+                        <Button Content="Valider la journée" Command="{Binding ValiderJourneeCommand}"
+                                Visibility="{Binding Resultat, Converter={StaticResource SiTexte}}" IsEnabled="{Binding PeutValider}"/>
+                        <Button Content="Nouvelle journée" Command="{Binding NouvelleJourneeCommand}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Journée du" Style="{StaticResource Etiquette}"/>
+                        <DatePicker SelectedDate="{Binding Journee}" Width="140" IsEnabled="{Binding Resultat, Converter={StaticResource Non}}"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+            <TextBlock Text="{Binding Blocage}" Foreground="{StaticResource Danger}" TextWrapping="Wrap" Margin="0,0,0,8"
+                       Visibility="{Binding Blocage, Converter={StaticResource SiTexte}}"/>
+
+            <!-- Production -->
+            <TextBlock Text="Production" Style="{StaticResource SousTitre}"/>
+            <DataGrid ItemsSource="{Binding Production}" IsReadOnly="True" MinHeight="80" AutomationProperties.AutomationId="GrilleProduction">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Volucompteur" Binding="{Binding Preparation.Volucompteur}" Width="110"/>
+                    <DataGridTextColumn Header="Pistolet" Binding="{Binding Preparation.Pistolet}" Width="80"/>
+                    <DataGridTextColumn Header="Produit" Binding="{Binding Preparation.Produit}" Width="*"/>
+                    <DataGridTextColumn Header="Ancien index" Binding="{Binding Preparation.IndexDebutPropose, StringFormat=N2}" Width="120"/>
+                    <DataGridTemplateColumn Header="Nouvel index" Width="130">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding NouvelIndex, UpdateSourceTrigger=PropertyChanged}" Margin="0"
+                                         IsEnabled="{Binding DataContext.Modifiable, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Volume (L)" Binding="{Binding Volume, StringFormat=N2}" Width="100"/>
+                    <DataGridTextColumn Header="Prix unitaire" Binding="{Binding Preparation.PrixUnitaireTtc, StringFormat=N2}" Width="95"/>
+                    <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=N2}" Width="120"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                <ItemsControl ItemsSource="{Binding SousTotaux}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Margin="0,0,24,0">
+                                <Run Text="{Binding Produit, Mode=OneWay}"/> : <Run Text="{Binding Volume, Mode=OneWay, StringFormat=N2}"/> L ·
+                                <Run Text="{Binding Total, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> DH
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock>Total production <Run Text="{Binding TotalProduction, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> DH</TextBlock>
+            </StackPanel>
+
+            <!-- Clients -->
+            <DockPanel Margin="0,14,0,6">
+                <Button DockPanel.Dock="Right" Content="+ Ajouter un client" Command="{Binding AjouterClientCommand}" IsEnabled="{Binding Modifiable}" Margin="0"/>
+                <TextBlock Text="Clients (bons de crédit)" Style="{StaticResource SousTitre}" Margin="0"/>
+            </DockPanel>
+            <DataGrid ItemsSource="{Binding Clients}" IsReadOnly="True" MinHeight="60" AutomationProperties.AutomationId="GrilleClients">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Nom" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding DataContext.ClientsCredit, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                          SelectedItem="{Binding Client, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Nom" Margin="0"
+                                          IsEnabled="{Binding DataContext.Modifiable, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Produit" Width="120">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox ItemsSource="{Binding DataContext.Carburants, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                          SelectedItem="{Binding Produit, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Designation" Margin="0"
+                                          IsEnabled="{Binding DataContext.Modifiable, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="N° bon de commande" Width="130">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding BonCommande, UpdateSourceTrigger=PropertyChanged}" Margin="0"
+                                         IsEnabled="{Binding DataContext.Modifiable, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="N° bon de livraison" Width="130">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding BonLivraison, UpdateSourceTrigger=PropertyChanged}" Margin="0"
+                                         IsEnabled="{Binding DataContext.Modifiable, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Volume (L)" Width="95">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Volume, UpdateSourceTrigger=PropertyChanged}" Margin="0"
+                                         IsEnabled="{Binding DataContext.Modifiable, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Prix unitaire" Width="95">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding PrixUnitaire, UpdateSourceTrigger=PropertyChanged}" Margin="0"
+                                         ToolTip="Prix à la pompe proposé ; modifiable si un prix différent est convenu avec le client"
+                                         IsEnabled="{Binding DataContext.Modifiable, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=N2}" Width="110"/>
+                    <DataGridTemplateColumn Width="40">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="✕" ToolTip="Retirer la ligne" Margin="0" Padding="6,0"
+                                        Command="{Binding DataContext.SupprimerClientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock HorizontalAlignment="Right" Margin="0,6,0,0">Total clients <Run Text="{Binding TotalClients, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> DH</TextBlock>
+            <TextBlock Foreground="#57606A" TextWrapping="Wrap" FontSize="12"
+                       Text="Le prix unitaire proposé est le prix à la pompe. Un prix convenu différent est accepté : la différence apparaîtra dans l'écart du solde."/>
+
+            <!-- Charges -->
+            <StackPanel Visibility="{Binding PeutSaisirCharges, Converter={StaticResource Visible}}">
+                <DockPanel Margin="0,14,0,6">
+                    <Button DockPanel.Dock="Right" Content="+ Ajouter une charge" Command="{Binding AjouterChargeCommand}" IsEnabled="{Binding Modifiable}" Margin="0"/>
+                    <TextBlock Text="Charges payées en caisse" Style="{StaticResource SousTitre}" Margin="0"/>
+                </DockPanel>
+                <DataGrid ItemsSource="{Binding Charges}" IsReadOnly="True" MinHeight="60" AutomationProperties.AutomationId="GrilleCharges">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Catégorie" Width="230">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox ItemsSource="{Binding DataContext.Categories, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              SelectedItem="{Binding Categorie, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Libelle" Margin="0"
+                                              IsEnabled="{Binding DataContext.Modifiable, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Bénéficiaire" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Beneficiaire, UpdateSourceTrigger=PropertyChanged}" Margin="0"
+                                             IsEnabled="{Binding DataContext.Modifiable, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Montant (DH)" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Montant, UpdateSourceTrigger=PropertyChanged}" Margin="0"
+                                             IsEnabled="{Binding DataContext.Modifiable, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Width="40">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="✕" ToolTip="Retirer la ligne" Margin="0" Padding="6,0"
+                                            Command="{Binding DataContext.SupprimerChargeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <TextBlock HorizontalAlignment="Right" Margin="0,6,0,0">Total charges <Run Text="{Binding TotalCharges, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> DH</TextBlock>
+            </StackPanel>
+
+            <!-- Solde de la période -->
+            <Border Style="{StaticResource Carte}" Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="Solde de la période" Style="{StaticResource SousTitre}" Margin="0,0,0,6"/>
+                    <TextBlock>
+                        Production <Run Text="{Binding TotalProduction, Mode=OneWay, StringFormat=N2}"/> −
+                        clients <Run Text="{Binding TotalClients, Mode=OneWay, StringFormat=N2}"/> −
+                        charges <Run Text="{Binding TotalCharges, Mode=OneWay, StringFormat=N2}"/> =
+                        <Run Text="{Binding SoldeAttendu, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold" FontSize="16"/> DH attendus en espèces
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <TextBlock Text="Espèces remises (comptées)" Style="{StaticResource Etiquette}"/>
+                        <TextBox Text="{Binding EspecesRemises, UpdateSourceTrigger=PropertyChanged}" Width="130" IsEnabled="{Binding Modifiable}"
+                                 AutomationProperties.AutomationId="EspecesRemises"/>
+                        <TextBlock VerticalAlignment="Center" Margin="16,0,0,0">
+                            Écart <Run Text="{Binding Ecart, Mode=OneWay, StringFormat=N2}" FontWeight="SemiBold"/> DH
+                        </TextBlock>
+                    </StackPanel>
+                    <TextBlock Foreground="#57606A" TextWrapping="Wrap" FontSize="12" Margin="0,6,0,0"
+                               Text="Un écart n'est qu'une différence de caisse à expliquer (erreur de saisie, de rendu de monnaie, prix convenu…), jamais une preuve de faute."/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Carte}" Visibility="{Binding Resultat, Converter={StaticResource SiTexte}}">
+                <StackPanel>
+                    <TextBlock FontWeight="SemiBold">
+                        Journée enregistrée : poste <Run Text="{Binding Resultat.Poste.Poste.Numero, Mode=OneWay}"/> —
+                        <Run Text="{Binding Resultat.Poste.Poste.Statut, Mode=OneWay, Converter={StaticResource Libelle}}"/>
+                    </TextBlock>
+                    <TextBlock Foreground="#57606A" TextWrapping="Wrap">
+                        Solde attendu <Run Text="{Binding Resultat.SoldeAttendu, Mode=OneWay, StringFormat=N2}"/> DH ·
+                        espèces remises <Run Text="{Binding Resultat.EspecesRemises, Mode=OneWay, StringFormat=N2}"/> DH ·
+                        écart <Run Text="{Binding Resultat.Ecart, Mode=OneWay, StringFormat=N2}"/> DH.
+                        Le détail et les éventuelles corrections se font dans « Postes et relevés » ; les charges apparaissent dans « Trésorerie ».
+                    </TextBlock>
+                    <ItemsControl ItemsSource="{Binding Resultat.Poste.Rapport.Alertes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding StringFormat=• {0}}" Foreground="{StaticResource Attention}" TextWrapping="Wrap"/></DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

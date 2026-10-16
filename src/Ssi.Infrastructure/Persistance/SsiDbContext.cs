@@ -394,6 +394,7 @@ public class SsiDbContext(DbContextOptions<SsiDbContext> options) : DbContext(op
         });
         b.Entity<Charge>(e =>
         {
+            e.HasOne<PosteTravail>().WithMany().HasForeignKey(x => x.PosteId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => x.Numero).IsUnique();
             e.HasOne(x => x.Categorie).WithMany().HasForeignKey(x => x.CategorieId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.CentreCout).WithMany().HasForeignKey(x => x.CentreCoutId).OnDelete(DeleteBehavior.Restrict);

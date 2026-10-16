@@ -18,7 +18,8 @@ namespace Ssi.Application.Station;
 /// </summary>
 public class ServicePostes(
     ISsiDb db, IHorloge horloge, Audit audit, IUtilisateurCourant courant, INumerotation numerotation,
-    Tarifs tarifs, Fiscalite fiscalite, Parametres parametres, MoteurStock stock, MoteurTresorerie tresorerie, Soldes soldes)
+    Tarifs tarifs, Fiscalite fiscalite, Parametres parametres, MoteurStock stock, MoteurTresorerie tresorerie, Soldes soldes,
+    ServiceTresorerie serviceReglements)
 {
     public const string TypeDocument = "POSTE";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -79,7 +80,7 @@ public class ServicePostes(
         var regs = await db.ReglementsPoste.AsNoTracking().Include(r => r.Client).Where(r => r.PosteId == posteId).OrderBy(r => r.CreeLe).ToListAsync(ct);
         var noms = await NomsEmployesAsync(regs.Where(r => r.OperateurId.HasValue).Select(r => r.OperateurId!.Value), ct);
         return regs.Select(r => new ReglementPosteDto(r.Id, r.Mode, r.Montant, r.ClientId, r.Client?.Nom, r.ProduitId,
-            r.Volume, r.Reference, r.OperateurId, r.OperateurId.HasValue ? noms.GetValueOrDefault(r.OperateurId.Value) : null, r.FactureId.HasValue)).ToList();
+            r.Volume, r.Reference, r.OperateurId, r.OperateurId.HasValue ? noms.GetValueOrDefault(r.OperateurId.Value) : null, r.FactureId.HasValue, r.ReferenceCommande)).ToList();
     }
 
     // ---------- Ouverture et relevés ----------
@@ -106,13 +107,19 @@ public class ServicePostes(
     public async Task<IReadOnlyList<PreparationReleveDto>> PreparationAsync(Guid posteId, CancellationToken ct)
     {
         var poste = Garde.Trouve(await db.Postes.AsNoTracking().FirstOrDefaultAsync(p => p.Id == posteId, ct), "Poste");
+        var deja = await db.Releves.Where(r => r.PosteId == posteId && r.Statut != StatutReleve.Annule).Select(r => r.PistoletId).ToListAsync(ct);
+        return await PreparationAsync(poste.Debut, deja, ct);
+    }
+
+    /// <summary>Pistolets actifs avec leur index de départ (dernier relevé) et le prix de vente applicable à l'instant donné.</summary>
+    public async Task<IReadOnlyList<PreparationReleveDto>> PreparationAsync(DateTimeOffset instant, IReadOnlyCollection<Guid> deja, CancellationToken ct)
+    {
         var pistolets = await db.Pistolets.AsNoTracking().Include(p => p.Volucompteur).Include(p => p.Produit)
             .Where(p => p.Actif && p.Volucompteur!.Actif).OrderBy(p => p.Volucompteur!.Code).ThenBy(p => p.Code).ToListAsync(ct);
-        var deja = await db.Releves.Where(r => r.PosteId == posteId && r.Statut != StatutReleve.Annule).Select(r => r.PistoletId).ToListAsync(ct);
         var resultat = new List<PreparationReleveDto>();
         foreach (var p in pistolets)
         {
-            var prix = await tarifs.PrixApplicableAsync(p.ProduitId, TypePrix.Vente, poste.Debut, ct);
+            var prix = await tarifs.PrixApplicableAsync(p.ProduitId, TypePrix.Vente, instant, ct);
             resultat.Add(new PreparationReleveDto(p.Id, p.Volucompteur!.Code, p.Code, p.Produit!.Designation,
                 await IndexPrecedentAsync(p, null, ct), prix?.Prix ?? 0, deja.Contains(p.Id)));
         }
@@ -257,7 +264,7 @@ public class ServicePostes(
         var r = new ReglementPoste
         {
             PosteId = posteId, Mode = mode, Montant = dto.Montant, ClientId = dto.ClientId, ProduitId = dto.ProduitId,
-            Volume = dto.Volume, Reference = dto.Reference, OperateurId = dto.OperateurId
+            Volume = dto.Volume, Reference = dto.Reference, ReferenceCommande = dto.ReferenceCommande, OperateurId = dto.OperateurId
         };
         db.ReglementsPoste.Add(r);
         await db.SaveChangesAsync(ct);
@@ -350,6 +357,17 @@ public class ServicePostes(
                 $"Poste {poste.Numero} — {groupe.Key}", horloge.JourneeDe(poste.Fin!.Value), m => { m.PosteId = poste.Id; m.DocumentRef = poste.Numero; }, ct);
         }
 
+        // Charges payées en espèces sur la recette du poste (saisie de la journée) : elles sortent de la caisse une fois la recette encaissée.
+        var chargesPoste = await db.Charges.AsNoTracking().Where(c => c.PosteId == posteId && c.Statut == StatutDocument.Valide).OrderBy(c => c.Numero).ToListAsync(ct);
+        if (chargesPoste.Count > 0)
+        {
+            var restes = await soldes.ChargesAsync(chargesPoste.Select(c => c.Id).ToList(), ct);
+            var caisse = await tresorerie.CompteParDefautAsync(TypeCompteFinancier.Caisse, ct);
+            foreach (var c in chargesPoste.Where(c => restes[c.Id].ResteDu > 0))
+                await serviceReglements.CreerReglementAsync(new CreationReglementDto(SensReglement.Decaissement, null, c.FournisseurId, c.Beneficiaire, ModeReglement.Especes,
+                    caisse.Id, horloge.JourneeDe(poste.Fin!.Value), restes[c.Id].ResteDu, poste.Numero, [new AffectationSaisieDto(null, c.Id, restes[c.Id].ResteDu)]), ct);
+        }
+
         poste.Statut = StatutPoste.Valide;
         poste.ValideLe = horloge.Maintenant;
         poste.ValidePar = courant.Id;
@@ -381,6 +399,14 @@ public class ServicePostes(
         var annules = financiers.Where(x => x.MouvementAnnuleId.HasValue).Select(x => x.MouvementAnnuleId!.Value).ToHashSet();
         foreach (var mf in financiers.Where(x => x.Nature != NatureMouvementFinancier.ContrePassation && !annules.Contains(x.Id)))
             await tresorerie.ContrePasserAsync(mf, $"Réouverture poste {poste.Numero}", ct);
+
+        // Paiements des charges réglées sur la recette du poste : annulés (contre-passés), les charges redeviennent à payer.
+        var chargesPoste = await db.Charges.AsNoTracking().Where(c => c.PosteId == posteId).Select(c => c.Id).ToListAsync(ct);
+        if (chargesPoste.Count > 0)
+            foreach (var id in await db.Reglements.Where(r => r.Reference == poste.Numero && r.Statut == StatutReglement.Valide
+                                                             && r.Affectations.Any(a => a.ChargeId != null && chargesPoste.Contains(a.ChargeId.Value)))
+                         .Select(r => r.Id).ToListAsync(ct))
+                await serviceReglements.AnnulerReglementAsync(id, $"Réouverture du poste {poste.Numero} : {m}", ct);
 
         foreach (var r in await db.Releves.Where(r => r.PosteId == posteId && r.Statut == StatutReleve.Valide).ToListAsync(ct))
         {

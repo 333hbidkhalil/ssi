@@ -490,6 +490,10 @@ namespace Ssi.Infrastructure.Persistance.Migrations
                         .HasColumnType("text")
                         .HasColumnName("numero");
 
+                    b.Property<Guid?>("PosteId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("poste_id");
+
                     b.Property<string>("ReferencePiece")
                         .HasColumnType("text")
                         .HasColumnName("reference_piece");
@@ -524,6 +528,9 @@ namespace Ssi.Infrastructure.Persistance.Migrations
                     b.HasIndex("Numero")
                         .IsUnique()
                         .HasDatabaseName("ix_charges_numero");
+
+                    b.HasIndex("PosteId")
+                        .HasDatabaseName("ix_charges_poste_id");
 
                     b.ToTable("charges", null, t =>
                         {
@@ -3478,6 +3485,10 @@ namespace Ssi.Infrastructure.Persistance.Migrations
                         .HasColumnType("text")
                         .HasColumnName("reference");
 
+                    b.Property<string>("ReferenceCommande")
+                        .HasColumnType("text")
+                        .HasColumnName("reference_commande");
+
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -4676,6 +4687,12 @@ namespace Ssi.Infrastructure.Persistance.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_charges_centres_cout_centre_cout_id");
+
+                    b.HasOne("Ssi.Domain.Entites.PosteTravail", null)
+                        .WithMany()
+                        .HasForeignKey("PosteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_charges_postes_travail_poste_id");
 
                     b.Navigation("Categorie");
 

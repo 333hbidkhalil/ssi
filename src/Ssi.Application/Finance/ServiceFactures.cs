@@ -317,7 +317,7 @@ public class ServiceFactures(ISsiDb db, IHorloge horloge, Audit audit, INumerota
             {
                 FactureId = f.Id, ProduitId = b.ProduitId, Quantite = q, TauxTva = taux, MontantHt = m.Ht, MontantTva = m.Tva, MontantTtc = m.Ttc,
                 PrixUnitaireHt = Math.Round(m.Ht / q, 4, MidpointRounding.AwayFromZero),
-                Designation = $"Bon {b.Reference ?? "-"} du {poste.JourneeExploitation:dd/MM/yyyy} ({poste.Numero}) — {produit?.Designation ?? "carburant"}"
+                Designation = $"Bon {b.Reference ?? "-"}{(b.ReferenceCommande is { Length: > 0 } bc ? $" (commande {bc})" : "")} du {poste.JourneeExploitation:dd/MM/yyyy} ({poste.Numero}) — {produit?.Designation ?? "carburant"}"
             });
             b.FactureId = f.Id;
         }

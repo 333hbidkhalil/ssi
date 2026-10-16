@@ -86,6 +86,7 @@
             </Style>
 
             <DataTemplate DataType="{x:Type vm:TableauBordViewModel}"><v:TableauBordView/></DataTemplate>
+            <DataTemplate DataType="{x:Type vm:SaisieJourneeViewModel}"><v:SaisieJourneeView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:PostesViewModel}"><v:PostesView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:CaisseViewModel}"><v:CaisseView/></DataTemplate>
             <DataTemplate DataType="{x:Type vm:VentesViewModel}"><v:VentesView/></DataTemplate>

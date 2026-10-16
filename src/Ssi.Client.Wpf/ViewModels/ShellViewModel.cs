@@ -23,6 +23,7 @@ public sealed partial class ShellViewModel : ViewModelBase
     public static readonly IReadOnlyList<EntreeMenu> Menu =
     [
         new("Tableau de bord", "", typeof(TableauBordViewModel), [Droits.TableauBord]),
+        new("Saisie du jour", "", typeof(SaisieJourneeViewModel), [Droits.StationCreer]),
         new("Postes et relevés", "", typeof(PostesViewModel), [Droits.StationConsulter]),
         new("Caisse", "", typeof(CaisseViewModel), [Droits.CaisseConsulter]),
         new("Ventes d'articles", "", typeof(VentesViewModel), [Droits.VentesConsulter]),

@@ -34,9 +34,9 @@ public sealed record ReleveDto(Guid Id, Guid PistoletId, string Volucompteur, st
     StatutReleve Statut, IReadOnlyList<AnomalieDto> Anomalies, string? Commentaire, string? MotifCorrection, DateTimeOffset Horodatage);
 public sealed record ResultatReleveDto(ReleveDto? Releve, IReadOnlyList<AnomalieDto> Anomalies, bool Enregistre, string Message);
 public sealed record SaisieReglementPosteDto(ModeReglement Mode, decimal Montant, Guid? ClientId, Guid? ProduitId, decimal? Volume,
-    string? Reference, Guid? OperateurId);
+    string? Reference, Guid? OperateurId, string? ReferenceCommande = null);
 public sealed record ReglementPosteDto(Guid Id, ModeReglement Mode, decimal Montant, Guid? ClientId, string? Client, Guid? ProduitId,
-    decimal? Volume, string? Reference, Guid? OperateurId, string? Operateur, bool Facture);
+    decimal? Volume, string? Reference, Guid? OperateurId, string? Operateur, bool Facture, string? ReferenceCommande = null);
 public sealed record PosteDetailDto(PosteResumeDto Poste, IReadOnlyList<ReleveDto> Releves, IReadOnlyList<ReglementPosteDto> Reglements,
     RapportPosteDto Rapport);
 public sealed record LigneRapportProduitDto(string Produit, decimal Volume, decimal MontantTtc, decimal MontantHt, decimal VolumeBonsCredit);
@@ -49,3 +49,13 @@ public sealed record EvenementCompteurDto(Guid Id, Guid PistoletId, TypeEvenemen
     DateTimeOffset Horodatage, string Motif, StatutDemande Statut);
 public sealed record SaisieEvenementCompteurDto(TypeEvenementCompteur Type, decimal AncienIndex, decimal NouvelIndex, string Motif);
 public sealed record DecisionDto(bool Approuve, string? Commentaire);
+
+// Saisie de la journée en une fois, au format du tableau de l'exploitant : production (index), clients (bons), charges, solde.
+public sealed record PreparationJourneeDto(DateOnly Journee, IReadOnlyList<PreparationReleveDto> Index, string? Blocage);
+public sealed record IndexJourneeDto(Guid PistoletId, decimal IndexFin);
+public sealed record BonClientJourneeDto(Guid ClientId, Guid ProduitId, string? BonCommande, string? BonLivraison, decimal Volume, decimal PrixUnitaire);
+public sealed record ChargeJourneeDto(Guid CategorieId, string Beneficiaire, decimal Montant);
+public sealed record SaisieJourneeDto(DateOnly Journee, IReadOnlyList<IndexJourneeDto> Index, IReadOnlyList<BonClientJourneeDto> Clients,
+    IReadOnlyList<ChargeJourneeDto> Charges, decimal EspecesRemises, bool ConfirmerAvertissements);
+public sealed record ResultatJourneeDto(PosteDetailDto Poste, decimal Production, decimal Clients, decimal Charges, decimal SoldeAttendu,
+    decimal EspecesRemises, decimal Ecart, IReadOnlyList<string> NumerosCharges);

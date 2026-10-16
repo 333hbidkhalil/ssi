@@ -108,7 +108,10 @@ public class ReglementPoste : Entite
     public Client? Client { get; set; }
     public Guid? ProduitId { get; set; }
     public decimal? Volume { get; set; }
+    /// <summary>Numéro du bon de livraison (bon de crédit) ou de la pièce du règlement.</summary>
     public string? Reference { get; set; }
+    /// <summary>Numéro du bon de commande du client, quand il en remet un.</summary>
+    public string? ReferenceCommande { get; set; }
     public Guid? OperateurId { get; set; }
     /// <summary>Facture récapitulative ayant regroupé ce bon de crédit.</summary>
     public Guid? FactureId { get; set; }

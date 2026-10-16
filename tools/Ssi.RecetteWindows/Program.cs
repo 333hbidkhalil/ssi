@@ -70,6 +70,73 @@ try
         }
     }
 
+    // Saisie complète d'une journée par l'écran « Saisie du jour », comme l'exploitant (format de son tableau).
+    {
+        const string ecran = "Saisie du jour › journée saisie et validée";
+        var detail = new List<string>();
+        menu.Items.First(i => i.Name == "Saisie du jour").Select();
+        Attendre(2500);
+        Bouton("Actualiser (F5)").Invoke();
+        Attendre(2500);
+        var production = Trouver("GrilleProduction");
+        var index = production.FindAllDescendants(cf => cf.ByControlType(ControlType.Edit));
+        if (index.Length != 2) detail.Add($"{index.Length} lignes de production au lieu de 2");
+        // Index de départ : 126 150,50 (GO) et 80 400,00 (SP) après le poste de recette ; ventes du jour 300 L et 100 L.
+        Saisir(index[0], "126450,5");
+        Saisir(index[1], "80500");
+        var clients = Trouver("GrilleClients");
+        foreach (var combo in clients.FindAllDescendants(cf => cf.ByControlType(ControlType.ComboBox)))
+        {
+            combo.Focus(); Keyboard.Press(VirtualKeyShort.DOWN); Attendre(300);   // premier client crédit, premier carburant
+        }
+        var champsClient = clients.FindAllDescendants(cf => cf.ByControlType(ControlType.Edit));
+        Saisir(champsClient[0], "123");
+        Saisir(champsClient[1], "321");
+        Saisir(champsClient[2], "20");
+        var charges = Trouver("GrilleCharges");
+        var categorie = charges.FindFirstDescendant(cf => cf.ByControlType(ControlType.ComboBox));
+        categorie.Focus(); Keyboard.Press(VirtualKeyShort.DOWN); Attendre(300);
+        var champsCharge = charges.FindAllDescendants(cf => cf.ByControlType(ControlType.Edit));
+        Saisir(champsCharge[0], "ONE");
+        Saisir(champsCharge[1], "35,32");
+        Saisir(Trouver("EspecesRemises"), "4900");
+        Attendre(500);
+        Capturer("saisie du jour remplie");
+        Bouton("Enregistrer la journée").Invoke();
+        RepondreOui(detail, "confirmation de l'enregistrement");
+        Attendre(3000);
+        RepondreOui(detail, "contrôle des index", obligatoire: false);
+        Attendre(1500);
+        Capturer("saisie du jour enregistree");
+        Bouton("Valider la journée").Invoke();
+        RepondreOui(detail, "confirmation de la validation");
+        Attendre(3000);
+        var bandeau = fenetre.FindFirstDescendant(cf => cf.ByAutomationId("BandeauErreur"));
+        if (bandeau is not null && !bandeau.IsOffscreen && !string.IsNullOrWhiteSpace(bandeau.Name)) detail.Add($"Bandeau d'erreur : {bandeau.Name}");
+        if (fenetre.FindFirstDescendant(cf => cf.ByName("Journée validée : ventes, stocks et trésorerie mis à jour.")) is null
+            && !detail.Any()) detail.Add("Message de validation de la journée absent");
+        Capturer("saisie du jour validee");
+        lignes.Add((ecran, detail.Count == 0 ? "OK" : "ERREUR", string.Join(" / ", detail)));
+        Console.WriteLine($"{ecran} : {(detail.Count == 0 ? "OK" : string.Join(" / ", detail))}");
+    }
+
+    // Répond « Oui » à la boîte de dialogue de confirmation attendue (capture à l'appui).
+    void RepondreOui(List<string> detail, string quoi, bool obligatoire = true)
+    {
+        Window? dialogue = null;
+        for (var i = 0; i < (obligatoire ? 20 : 4) && dialogue is null; i++)
+        {
+            dialogue = app.GetAllTopLevelWindows(automation).FirstOrDefault(w => w.Properties.ProcessId == app.ProcessId && !w.Equals(fenetre));
+            if (dialogue is null) Attendre(500);
+        }
+        if (dialogue is null) { if (obligatoire) detail.Add($"Boîte de dialogue absente : {quoi}"); return; }
+        Capture.Element(dialogue).ToFile(Path.Combine(sortie, $"{++numero:00}-dialogue-{Nom(quoi)}.png"));
+        var oui = dialogue.FindAllDescendants(cf => cf.ByControlType(ControlType.Button)).FirstOrDefault(b => b.Name is "Oui" or "&Oui" or "Yes" or "&Yes");
+        if (oui is null) { detail.Add($"Bouton Oui absent : {quoi}"); return; }
+        oui.AsButton().Invoke();
+        Attendre(500);
+    }
+
     void Controler(string ecran)
     {
         var detail = new List<string>();

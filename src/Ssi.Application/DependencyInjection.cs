@@ -31,6 +31,7 @@ public static class DependencyInjection
         s.AddScoped<ServiceCatalogue>();
         s.AddScoped<ServiceEquipements>();
         s.AddScoped<ServicePostes>();
+        s.AddScoped<ServiceSaisieJournee>();
         s.AddScoped<ServiceStocks>();
         s.AddScoped<ServiceFactures>();
         s.AddScoped<ServiceAchats>();

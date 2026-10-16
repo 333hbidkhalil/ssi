@@ -125,3 +125,15 @@ public class PostesController(ServicePostes postes) : ControllerBase
     [HttpPost("evenements-compteur/{id:guid}/decision"), Autorise(P.StationCorrigerIndex)]
     public Task<EvenementCompteurDto> DeciderEvenement(Guid id, DecisionDto dto, CancellationToken ct) => postes.DeciderEvenementAsync(id, dto, ct);
 }
+
+[ApiController]
+[Route("api/journees")]
+public class JourneesController(ServiceSaisieJournee journees) : ControllerBase
+{
+    [HttpGet("preparation"), Autorise(P.StationCreer)]
+    public Task<PreparationJourneeDto> Preparation(DateOnly journee, CancellationToken ct) => journees.PreparationAsync(journee, ct);
+
+    /// <summary>Production, bons clients, charges payées en caisse et espèces de la journée, en une seule transaction.</summary>
+    [HttpPost, Autorise(P.StationCreer), Idempotent]
+    public Task<ResultatJourneeDto> Enregistrer(SaisieJourneeDto dto, CancellationToken ct) => journees.EnregistrerAsync(dto, ct);
+}
