@@ -130,7 +130,18 @@ jobs:
           $verifiees = & "$pgbin\psql.exe" -X -A -t -h 127.0.0.1 -p $env:SSI_PGPORT -U postgres -d ssi -c "SELECT count(*) FROM sauvegardes WHERE statut = 'VERIFIEE'"
           if ([int]$verifiees -lt 1) { throw "La sauvegarde n'est pas inscrite comme vérifiée : l'alerte du tableau de bord resterait active." }
 
-      - name: Rassembler les journaux
+      - name: Mise à jour d'une installation existante (deploy/mettre-a-jour.ps1)
+        shell: pwsh
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/mettre-a-jour.ps1 *>&1 | Tee-Object -FilePath recette/mise-a-jour.log
+          if ($LASTEXITCODE) { throw "mettre-a-jour.ps1 en échec ($LASTEXITCODE)" }
+          if (-not (Get-ChildItem C:\SSI -Directory -Filter "Api.precedent-*")) { throw "Ancienne version non conservée." }
+          # Les données sont intactes : la journée saisie par le robot est toujours là.
+          $env:PGPASSWORD = $env:SSI_PGMDP
+          $postes = & "C:\SSI\PostgreSQL\pgsql\bin\psql.exe" -X -A -t -h 127.0.0.1 -p $env:SSI_PGPORT -U postgres -d ssi -c "SELECT count(*) FROM postes_travail"
+          if ([int]$postes -lt 2) { throw "Données manquantes après la mise à jour ($postes postes)." }
+
+
         if: always()
         shell: pwsh
         run: |
