@@ -141,7 +141,7 @@ jobs:
           $postes = & "C:\SSI\PostgreSQL\pgsql\bin\psql.exe" -X -A -t -h 127.0.0.1 -p $env:SSI_PGPORT -U postgres -d ssi -c "SELECT count(*) FROM postes_travail"
           if ([int]$postes -lt 2) { throw "Données manquantes après la mise à jour ($postes postes)." }
 
-
+      - name: Rassembler les journaux
         if: always()
         shell: pwsh
         run: |
