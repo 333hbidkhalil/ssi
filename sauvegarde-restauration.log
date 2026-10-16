@@ -1,0 +1,15 @@
+Tâche planifiée : dernier résultat 0
+2026-10-16 17:47:57 VERIFIEE C:\SSI\Sauvegardes\ssi-ssi-20261016-174753.dump : Restauration de contrôle réussie ; 21 totaux identiques
+
+TimeCreated      : 10/16/2026 5:47:57 PM
+LevelDisplayName : Information
+Message          : VERIFIEE : Restauration de contrôle réussie ; 21 totaux identiques
+
+
+          horodatage           |  statut  |                     fichier                     | taille |                         message                         
+-------------------------------+----------+-------------------------------------------------+--------+---------------------------------------------------------
+ 2026-10-16 17:47:57.971856+00 | VERIFIEE | C:\SSI\Sauvegardes\ssi-ssi-20261016-174753.dump | 169078 | Restauration de contrôle réussie ; 21 totaux identiques
+(1 row)
+
+Totaux de contrôle identiques à ceux de la sauvegarde.
+Base ssi_essai_restauration restaurée. Relancez avec -Basculer pour que l'application l'utilise.

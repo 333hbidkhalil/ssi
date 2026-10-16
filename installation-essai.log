@@ -1,0 +1,83 @@
+
+### Vérifications
+Port 5432 déjà utilisé par un autre logiciel : la base SSI utilisera le port 5433.
+Port 5443 déjà utilisé par un autre logiciel : le serveur SSI utilisera le port 5444.
+
+### PostgreSQL propre à SSI
+Téléchargement de PostgreSQL 16.10-1 (environ 300 Mo)…
+The files belonging to this database system will be owned by user "runneradmin".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "English_United States.1252".
+The default text search configuration will be set to "english".
+
+Data page checksums are disabled.
+
+creating directory C:/SSI/Base ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... windows
+selecting default max_connections ... 100
+selecting default shared_buffers ... 128MB
+selecting default time zone ... UTC
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+syncing data to disk ... ok
+
+Success. You can now start the database server using:
+
+    ^"C^:^\SSI^\PostgreSQL^\pgsql^\bin^\pg^_ctl^" -D ^"C^:^\SSI^\Base^" -l logfile start
+
+Base SSI démarrée (service « SSI-PostgreSQL », port 5433, accès local uniquement, par mot de passe).
+
+### Serveur SSI
+
+=== Base de données
+
+=== Fichiers de l'application
+
+=== Certificat HTTPS
+
+=== Configuration
+
+=== Service Windows
+
+=== Pare-feu (réseau local uniquement)
+
+=== Vérification
+
+=== Sauvegarde quotidienne vérifiée
+Sauvegarde vérifiée planifiée chaque jour à 23:30. Résultats : table « sauvegardes » (écran Administration) et journal 
+Application.
+Recommandation : ajoutez -CopieExterne vers un disque externe ou un autre poste ; une sauvegarde sur le seul serveur 
+ne protège pas contre sa perte.
+
+Installation terminée.
+Adresse des postes clients : https://localhost:5444
+Certificat à installer sur chaque poste : C:\SSI\Certificats\ssi-serveur.cer (deploy\installer-poste.ps1)
+Compte initial : admin / Lw338QVBTroL  (changement obligatoire à la première connexion ; notez-le maintenant, il n'est 
+pas réaffiché)
+Avant la mise en service : renseignez la fiche société et VALIDEZ les taux de TVA (paramètres « À VALIDER »).
+
+### Poste client (ce même ordinateur)
+Serveur joignable.
+
+Installation d'essai terminée. Identifiants : C:\Users\runneradmin\Desktop\SSI - identifiants d'essai.txt
+
+Name      : SSI-PostgreSQL
+Status    : Running
+StartType : Automatic
+
+Name      : SSIApi
+Status    : Running
+StartType : Automatic
+
+
+LocalAddress  : Any
+RemoteAddress : LocalSubnet
+
+{
+    "Serveur":  {
+                    "Adresse":  "https://localhost:5444"
+                }
+}
