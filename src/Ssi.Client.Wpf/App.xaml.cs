@@ -28,6 +28,8 @@ public partial class App : Application
         // fr-FR donne les mêmes formats de date et de nombre que fr-MA, avec l'espace fine comme séparateur des milliers.
         // Aucun format monétaire (C) n'est utilisé : les montants sont suffixés « DH » explicitement.
         FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(XmlLanguage.GetLanguage("fr-FR")));
+        // Les montants affichés dans des <Run> (totaux, synthèses) : même format que les grilles, et non le format anglais par défaut.
+        FrameworkContentElement.LanguageProperty.OverrideMetadata(typeof(System.Windows.Documents.TextElement), new FrameworkPropertyMetadata(XmlLanguage.GetLanguage("fr-FR")));
         DispatcherUnhandledException += Inattendue;
 
         var config = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile("appsettings.json", optional: true).Build();

@@ -15,7 +15,7 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="Journée du" Style="{StaticResource Etiquette}"/>
-                        <DatePicker SelectedDate="{Binding Journee}" Width="140" IsEnabled="{Binding Resultat, Converter={StaticResource Non}}"/>
+                        <DatePicker SelectedDate="{Binding Journee}" Width="170" IsEnabled="{Binding Resultat, Converter={StaticResource Non}}"/>
                     </StackPanel>
                 </DockPanel>
             </Border>
@@ -83,7 +83,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="N° bon de commande" Width="130">
+                    <DataGridTemplateColumn Header="N° bon de commande" Width="160">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBox Text="{Binding BonCommande, UpdateSourceTrigger=PropertyChanged}" Margin="0"
@@ -91,7 +91,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="N° bon de livraison" Width="130">
+                    <DataGridTemplateColumn Header="N° bon de livraison" Width="160">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBox Text="{Binding BonLivraison, UpdateSourceTrigger=PropertyChanged}" Margin="0"

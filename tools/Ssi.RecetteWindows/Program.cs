@@ -126,7 +126,9 @@ try
         Window? dialogue = null;
         for (var i = 0; i < (obligatoire ? 20 : 4) && dialogue is null; i++)
         {
-            dialogue = app.GetAllTopLevelWindows(automation).FirstOrDefault(w => w.Properties.ProcessId == app.ProcessId && !w.Equals(fenetre));
+            // Boîte de dialogue modale rattachée à la fenêtre principale, ou fenêtre de premier niveau.
+            dialogue = fenetre.ModalWindows.FirstOrDefault()
+                       ?? app.GetAllTopLevelWindows(automation).FirstOrDefault(w => w.Properties.ProcessId == app.ProcessId && !w.Equals(fenetre));
             if (dialogue is null) Attendre(500);
         }
         if (dialogue is null) { if (obligatoire) detail.Add($"Boîte de dialogue absente : {quoi}"); return; }
