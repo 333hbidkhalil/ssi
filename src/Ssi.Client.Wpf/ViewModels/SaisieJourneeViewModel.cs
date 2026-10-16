@@ -102,12 +102,13 @@ public sealed partial class SaisieJourneeViewModel(ClientApi api, Session sessio
 
     public bool PeutSaisirCharges => session.A(Droits.ChargesCreer);
     public bool PeutValider => session.A(Droits.StationValider);
+    public bool ValidationPossible => PeutValider && Resultat?.Poste.Poste.Statut == StatutPoste.Cloture;
     public bool Modifiable => Resultat is null && Blocage is null;
     public decimal SoldeAttendu => TotalProduction - TotalClients - TotalCharges;
     public decimal? Ecart => SaisieNombre.Lire(EspecesRemises) is { } r ? r - SoldeAttendu : null;
 
     partial void OnEspecesRemisesChanged(string value) => OnPropertyChanged(nameof(Ecart));
-    partial void OnResultatChanged(ResultatJourneeDto? value) => OnPropertyChanged(nameof(Modifiable));
+    partial void OnResultatChanged(ResultatJourneeDto? value) { OnPropertyChanged(nameof(Modifiable)); OnPropertyChanged(nameof(ValidationPossible)); }
     partial void OnBlocageChanged(string? value) => OnPropertyChanged(nameof(Modifiable));
     partial void OnTotalProductionChanged(decimal value) => SoldeModifie();
     partial void OnTotalClientsChanged(decimal value) => SoldeModifie();

@@ -29,6 +29,8 @@ Chaque hypothèse est appliquée dans le code tant qu'elle n'est pas révisée. 
 | H-23 | Vrac : le chiffre d'affaires est rattaché à la date de la facture client ; le coût d'achat et les frais sont rapprochés par livraison ; si la facture fournisseur manque, le coût est estimé au prix de commande et la période est signalée incomplète. | Rattachement à la date de livraison |
 | H-24 | Une alerte « sauvegarde » est levée s'il n'existe aucune sauvegarde **vérifiée** (restauration de contrôle réussie) depuis 26 heures. | Seuil paramétrable |
 | H-25 | La validation d'une session de caisse n'exige une explication que si l'écart dépasse le seuil paramétré ⚙ (`caisse.seuil_alerte_ecart`, 50 DH par défaut). | — |
+| H-26 | Saisie du jour (format du tableau de l'exploitant) : le solde attendu en espèces = production (index) − bons clients − charges payées en caisse ; les espèces remises sont saisies, jamais déduites, et l'écart est affiché. Le prix d'un bon client est le prix à la pompe par défaut, modifiable s'il est convenu autrement (la différence apparaît dans l'écart). | Prix client imposé = prix pompe |
+| H-27 | Les charges payées en caisse sur la recette du jour sont saisies TTC sans TVA récupérable, rattachées au centre « COMMUN », et réglées par la caisse à la validation de la journée (la réouverture annule ce paiement). Une facture avec TVA se saisit dans l'écran Charges. | Saisie de la TVA dans la saisie du jour |
 
 ## Questions ciblées (réponse attendue du propriétaire)
 

@@ -10,7 +10,7 @@
                         <Button Content="Enregistrer la journée" Style="{StaticResource Principal}" Command="{Binding EnregistrerCommand}"
                                 IsEnabled="{Binding Modifiable}" AutomationProperties.AutomationId="EnregistrerJournee"/>
                         <Button Content="Valider la journée" Command="{Binding ValiderJourneeCommand}"
-                                Visibility="{Binding Resultat, Converter={StaticResource SiTexte}}" IsEnabled="{Binding PeutValider}"/>
+                                Visibility="{Binding Resultat, Converter={StaticResource SiTexte}}" IsEnabled="{Binding ValidationPossible}"/>
                         <Button Content="Nouvelle journée" Command="{Binding NouvelleJourneeCommand}"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
